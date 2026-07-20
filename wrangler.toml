@@ -1,0 +1,14 @@
+name = "dexcuba"
+pages_build_output_dir = "."
+compatibility_date = "2026-07-01"
+
+# Binding de Cloudflare KV para el tablero P2P (/api/offers).
+# 1) Crea el namespace:  npx wrangler kv namespace create OFFERS
+# 2) Copia el id que te devuelve y pégalo abajo, reemplazando PON_AQUI_EL_ID.
+# 3) Redespliega.  (También puedes hacer este binding desde el panel:
+#    Workers & Pages > dexcuba > Settings > Functions > KV namespace bindings,
+#    con nombre de variable OFFERS.)
+
+[[kv_namespaces]]
+binding = "OFFERS"
+id = "f4d0f92f5d22417781a5c06ec4825924"

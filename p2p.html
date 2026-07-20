@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DexCuba — Mercado P2P</title>
+<meta name="description" content="Intercambia USDT y BTC por CUP directo entre personas. Sin custodia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A1018; --panel:#101826; --panel2:#16202F; --line:#243247;
+  --text:#EAF0F6; --muted:#8A99AD; --accent:#1FC7B6; --accent-deep:#0E9C8D;
+  --flag-red:#D3273E; --up:#2EBD85; --down:#F6465D; --radius:14px;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;color:var(--text)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.topbar{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,16,24,.92);backdrop-filter:blur(8px);z-index:50}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px}
+.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#E23A52,var(--flag-red));display:grid;place-items:center;color:#fff;font-size:14px}
+.logo .cu{color:var(--accent)}
+.topnav{display:flex;gap:4px;margin-left:8px}
+.topnav a{padding:8px 14px;border-radius:8px;color:var(--muted);font-size:14px;font-weight:500}
+.topnav a:hover{color:var(--text);background:var(--panel2)}
+.topnav a.active{color:var(--accent)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.rate-pill{font-family:var(--mono);font-size:12.5px;color:var(--muted);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+.rate-pill b{color:var(--accent)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:24px}
+.banner{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(160deg,#131D2E,#0E1622);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;margin-bottom:22px}
+.banner .ic{font-size:20px;flex:none;margin-top:1px}
+.banner h1{font-family:var(--display);font-size:18px;font-weight:600;margin-bottom:2px}
+.banner p{font-size:13px;color:var(--muted)}
+
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{padding:8px 14px;font-size:13.5px;font-weight:500;color:var(--muted)}
+.seg button.on{background:var(--accent);color:#05201C}
+.spacer{flex:1}
+.btn{padding:10px 18px;border-radius:10px;font-weight:600;font-size:14px;transition:filter .12s,transform .12s}
+.btn:active{transform:scale(.97)}
+.btn-accent{background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C}
+.btn-accent:hover{filter:brightness(1.08)}
+.btn-ghost{border:1px solid var(--line);background:var(--panel2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.card-top{display:flex;align-items:center;gap:10px}
+.tag{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;letter-spacing:.02em}
+.tag.vendo{background:rgba(246,70,93,.14);color:var(--down)}
+.tag.compro{background:rgba(46,189,133,.14);color:var(--up)}
+.asset-badge{display:flex;align-items:center;gap:7px;font-weight:600}
+.asset-ic{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#fff;font-family:var(--display)}
+.rate{margin-left:auto;text-align:right}
+.rate b{font-family:var(--mono);font-size:18px;color:var(--accent)}
+.rate span{display:block;font-size:11px;color:var(--muted)}
+.card-row{display:flex;justify-content:space-between;font-size:13px}
+.card-row .k{color:var(--muted)}
+.card-row .v{font-family:var(--mono)}
+.methods{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11.5px;background:var(--panel2);border:1px solid var(--line);padding:3px 9px;border-radius:7px;color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);font-style:italic}
+.card-foot{display:flex;gap:8px;align-items:center;margin-top:2px}
+.contact-btn{flex:1;padding:9px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--accent);text-align:center}
+.contact-btn:hover{border-color:var(--accent)}
+.escrow-btn{flex:1;padding:9px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C;font-size:13.5px;font-weight:600;text-align:center;transition:filter .12s}
+.escrow-btn:hover{filter:brightness(1.08)}
+
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .ic{font-size:34px;display:block;margin-bottom:10px;opacity:.6}
+
+.overlay{position:fixed;inset:0;background:rgba(4,8,13,.74);display:none;place-items:center;z-index:100;padding:20px;overflow-y:auto}
+.overlay.open{display:grid}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;width:min(460px,100%);position:relative;margin:auto}
+.modal h3{font-family:var(--display);font-size:18px;margin-bottom:4px}
+.modal .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+.modal-close{position:absolute;top:14px;right:16px;color:var(--muted);font-size:18px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.method-grid{display:flex;flex-wrap:wrap;gap:8px}
+.method-grid label{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 11px;font-size:13px;cursor:pointer;color:var(--text)}
+.method-grid input{width:auto;accent-color:var(--accent)}
+.form-msg{font-size:13px;padding:9px 12px;border-radius:9px;margin-bottom:12px;display:none}
+.form-msg.err{display:block;background:rgba(246,70,93,.12);color:var(--down);border:1px solid rgba(246,70,93,.3)}
+.form-msg.ok{display:block;background:rgba(46,189,133,.12);color:var(--up);border:1px solid rgba(46,189,133,.3)}
+.token-box{background:var(--panel2);border:1px dashed var(--accent);border-radius:10px;padding:12px;margin-top:10px;font-size:12.5px}
+.token-box code{font-family:var(--mono);color:var(--accent);word-break:break-all}
+
+.foot{max-width:1080px;margin:0 auto;padding:16px 24px 34px;color:var(--muted);font-size:12px;text-align:center}
+.foot a{color:var(--accent)}
+@media(max-width:560px){.wrap{padding:16px}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><span class="logo-mark">★</span>Dex<span class="cu">Cuba</span></div>
+  <nav class="topnav">
+    <a href="/">Panel</a>
+    <a href="/swap.html">Swap</a>
+    <a href="/p2p.html" class="active">Mercado P2P</a>
+    <a href="/escrow.html">Escrow</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="rate-pill" id="ratePill">USD/CUP <b id="ratePillVal">—</b></span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="banner">
+    <span class="ic">🤝</span>
+    <div>
+      <h1>Mercado P2P — USDT ⇄ CUP</h1>
+      <p>Publica o encuentra ofertas de USDT por pesos cubanos. Te conectas directo con la otra persona y liquidan billetera a billetera (el USDT en tu wallet, el CUP por efectivo o transferencia). DexCuba no retiene fondos ni interviene en el pago: verifica siempre a tu contraparte antes de enviar nada.</p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="seg" id="segAsset">
+      <button data-v="USDT" class="on">USDT</button>
+      <button data-v="BTC">BTC</button>
+      <button data-v="all">Todos</button>
+    </div>
+    <div class="seg" id="segSide">
+      <button data-v="all" class="on">Compra y venta</button>
+      <button data-v="vendo">Venden cripto</button>
+      <button data-v="compro">Compran cripto</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="loadOffers()">↻ Actualizar</button>
+    <button class="btn btn-accent" onclick="openForm()">+ Publicar oferta</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">
+    <span class="ic">📭</span>
+    Aún no hay ofertas con estos filtros.<br>¡Sé el primero en publicar una!
+  </div>
+</div>
+
+<footer class="foot">
+  DexCuba P2P · Plataforma no-custodial: no participamos en la liquidación ni retenemos fondos.<br>
+  Tasa de referencia USD/CUP del mercado informal, fuente <a href="https://eltoque.com/tasas-de-cambio-cuba" target="_blank" rel="noopener">elTOQUE</a>. Opera bajo tu propio riesgo.
+</footer>
+
+<!-- ===== Modal publicar ===== -->
+<div class="overlay" id="formOverlay" role="dialog" aria-modal="true" aria-label="Publicar oferta">
+  <div class="modal">
+    <button class="modal-close" onclick="closeForm()" aria-label="Cerrar">✕</button>
+    <h3>Publicar una oferta</h3>
+    <p class="sub">Tu anuncio será visible 7 días. Guarda el código que te daremos para poder borrarlo antes.</p>
+    <div class="form-msg" id="formMsg"></div>
+
+    <div class="two">
+      <div class="field">
+        <label for="fSide">Quiero</label>
+        <select id="fSide"><option value="vendo">Vender cripto (recibo CUP)</option><option value="compro">Comprar cripto (pago CUP)</option></select>
+      </div>
+      <div class="field">
+        <label for="fAsset">Activo</label>
+        <select id="fAsset"><option value="USDT">USDT</option><option value="BTC">BTC</option></select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="fRate">Precio — CUP por 1 USD <span id="rateHint" style="color:var(--muted)"></span></label>
+      <input id="fRate" type="number" inputmode="numeric" placeholder="ej. 410">
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="fMin">Mínimo (USD)</label>
+        <input id="fMin" type="number" inputmode="numeric" placeholder="20">
+      </div>
+      <div class="field">
+        <label for="fMax">Máximo (USD)</label>
+        <input id="fMax" type="number" inputmode="numeric" placeholder="500">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Métodos de pago CUP aceptados</label>
+      <div class="method-grid" id="fMethods"></div>
+    </div>
+
+    <div class="field">
+      <label for="fContact">Contacto (Telegram, WhatsApp…)</label>
+      <input id="fContact" placeholder="@usuario o +53…" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="fNote">Nota (opcional)</label>
+      <textarea id="fNote" rows="2" maxlength="200" placeholder="Disponible de 9am a 6pm, solo Habana…"></textarea>
+    </div>
+
+    <button class="btn btn-accent" style="width:100%" onclick="submitOffer()">Publicar oferta</button>
+
+    <div class="token-box" id="tokenBox" style="display:none">
+      ✓ Oferta publicada. Para borrarla más tarde guarda este código:<br>
+      <code id="tokenVal"></code>
+    </div>
+  </div>
+</div>
+
+<script>
+const METHODS=['Efectivo','Transferencia CUP','Transfermóvil','Enzona','Zelle','Saldo móvil'];
+const ASSET_COLOR={USDT:'#26A17B',BTC:'#F7931A'};
+let CUP_REF=null;
+let allOffers=[];
+let fAsset='USDT', fSide='all';
+
+/* ---- Tasa de referencia elTOQUE ---- */
+async function loadRef(){
+  try{
+    const r=await fetch('/api/cup');if(!r.ok)return;
+    const d=await r.json();
+    if(d&&d.usd_cup){CUP_REF=d.usd_cup;document.getElementById('ratePillVal').textContent=Math.round(d.usd_cup);}
+  }catch(e){}
+}
+
+/* ---- Cargar ofertas ---- */
+async function loadOffers(){
+  try{
+    const r=await fetch('/api/offers');
+    const d=await r.json();
+    if(d.error){renderError(d.error);return;}
+    allOffers=d.offers||[];
+    render();
+  }catch(e){renderError('sin_conexion');}
+}
+function renderError(code){
+  const g=document.getElementById('grid');g.innerHTML='';
+  const e=document.getElementById('empty');e.style.display='block';
+  e.innerHTML= code==='kv_no_configurado'
+    ? '<span class="ic">⚙️</span>El almacenamiento aún no está configurado.<br>Falta crear el binding KV <code>OFFERS</code> (ver README).'
+    : '<span class="ic">⚠️</span>No se pudieron cargar las ofertas. Intenta de nuevo.';
+}
+
+/* ---- Filtros ---- */
+function wireSeg(id,cb){
+  document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');cb(b.dataset.v);
+  });
+}
+wireSeg('segAsset',v=>{fAsset=v;render();});
+wireSeg('segSide',v=>{fSide=v;render();});
+
+/* ---- Render ---- */
+function render(){
+  const g=document.getElementById('grid');
+  const rows=allOffers.filter(o=>(fAsset==='all'||o.asset===fAsset)&&(fSide==='all'||o.side===fSide));
+  document.getElementById('empty').style.display=rows.length?'none':'block';
+  if(!rows.length&&!allOffers.length){/* keep whatever error/empty */}
+  g.innerHTML=rows.map(card).join('');
+}
+function card(o){
+  const sideLabel=o.side==='vendo'?'VENDE':'COMPRA';
+  const refDiff=CUP_REF?((o.cup_per_usd-CUP_REF)/CUP_REF*100):null;
+  const diffStr=refDiff!==null?(refDiff>=0?'+':'')+refDiff.toFixed(1)+'% vs elTOQUE':'';
+  const methods=o.methods.map(m=>`<span class="chip">${esc(m)}</span>`).join('');
+  const contact=esc(o.contact);
+  const link=contactLink(o.contact);
+  return `<div class="card">
+    <div class="card-top">
+      <span class="tag ${o.side}">${sideLabel}</span>
+      <span class="asset-badge"><span class="asset-ic" style="background:${ASSET_COLOR[o.asset]||'#555'}">${o.asset[0]}</span>${o.asset}</span>
+      <span class="rate"><b>${o.cup_per_usd}</b><span>CUP/USD ${diffStr}</span></span>
+    </div>
+    <div class="card-row"><span class="k">Límites</span><span class="v">$${o.min_usd} – $${o.max_usd}</span></div>
+    <div class="methods">${methods}</div>
+    ${o.note?`<div class="note">"${esc(o.note)}"</div>`:''}
+    <div class="card-foot">
+      <a class="contact-btn" href="${link}" target="_blank" rel="noopener">Contactar</a>
+      ${o.asset==='USDT'?`<a class="escrow-btn" href="${escrowLink(o)}">Iniciar escrow</a>`:''}
+    </div>
+  </div>`;
+}
+function escrowLink(o){
+  const p=new URLSearchParams({asset:o.asset,side:o.side,rate:o.cup_per_usd,min:o.min_usd,max:o.max_usd,contact:o.contact});
+  return '/escrow.html?'+p.toString();
+}
+function contactLink(c){
+  c=(c||'').trim();
+  if(c.startsWith('@'))return 'https://t.me/'+c.slice(1);
+  if(/^\+?\d[\d\s]{6,}$/.test(c))return 'https://wa.me/'+c.replace(/[^\d]/g,'');
+  return '#';
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ---- Formulario ---- */
+function openForm(){
+  document.getElementById('fMethods').innerHTML=METHODS.map(m=>
+    `<label><input type="checkbox" value="${m}">${m}</label>`).join('');
+  document.getElementById('tokenBox').style.display='none';
+  document.getElementById('formMsg').className='form-msg';
+  document.getElementById('formOverlay').classList.add('open');
+  updateRateHint();
+}
+function closeForm(){document.getElementById('formOverlay').classList.remove('open');}
+document.getElementById('formOverlay').addEventListener('click',e=>{if(e.target.id==='formOverlay')closeForm();});
+document.getElementById('fAsset').addEventListener('change',updateRateHint);
+function updateRateHint(){
+  const a=document.getElementById('fAsset').value;
+  document.getElementById('rateHint').textContent = a==='BTC'?'(equivalente en USD de BTC)':'';
+}
+async function submitOffer(){
+  const msg=document.getElementById('formMsg');
+  const methods=[...document.querySelectorAll('#fMethods input:checked')].map(i=>i.value);
+  const payload={
+    side:document.getElementById('fSide').value,
+    asset:document.getElementById('fAsset').value,
+    cup_per_usd:document.getElementById('fRate').value,
+    min_usd:document.getElementById('fMin').value,
+    max_usd:document.getElementById('fMax').value,
+    methods,
+    contact:document.getElementById('fContact').value,
+    note:document.getElementById('fNote').value,
+  };
+  const errs={tasa_invalida:'Revisa el precio (CUP por USD).',limites_invalidos:'Revisa los límites mínimo y máximo.',metodos_requeridos:'Elige al menos un método de pago.',contacto_requerido:'Añade un contacto válido.',kv_no_configurado:'Almacenamiento no configurado aún.'};
+  try{
+    const r=await fetch('/api/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(!r.ok||d.error){msg.className='form-msg err';msg.textContent=errs[d.error]||'No se pudo publicar. Revisa los datos.';return;}
+    msg.className='form-msg ok';msg.textContent='¡Oferta publicada!';
+    document.getElementById('tokenVal').textContent=d.delete_token;
+    document.getElementById('tokenBox').style.display='block';
+    loadOffers();
+  }catch(e){msg.className='form-msg err';msg.textContent='Error de conexión.';}
+}
+
+/* ---- Init ---- */
+loadRef();loadOffers();
+</script>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DexCuba — Swap</title>
+<meta name="description" content="Intercambia tokens TRC-20 directo desde tu billetera. Sin custodia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A1018; --panel:#101826; --panel2:#16202F; --line:#243247;
+  --text:#EAF0F6; --muted:#8A99AD; --accent:#1FC7B6; --accent-deep:#0E9C8D;
+  --flag-red:#D3273E; --up:#2EBD85; --down:#F6465D; --warn:#E8B341; --radius:14px;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;color:var(--text)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.topbar{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,16,24,.92);backdrop-filter:blur(8px);z-index:50}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px}
+.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#E23A52,var(--flag-red));display:grid;place-items:center;color:#fff;font-size:14px}
+.logo .cu{color:var(--accent)}
+.topnav{display:flex;gap:4px;margin-left:8px}
+.topnav a{padding:8px 14px;border-radius:8px;color:var(--muted);font-size:14px;font-weight:500}
+.topnav a:hover{color:var(--text);background:var(--panel2)}
+.topnav a.active{color:var(--accent)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.wallet-btn{padding:9px 18px;border-radius:10px;font-weight:700;font-size:13.5px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C;transition:filter .12s}
+.wallet-btn:hover{filter:brightness(1.08)}
+.wallet-btn.on{background:var(--panel2);border:1px solid var(--accent);color:var(--accent);font-weight:600}
+
+.wrap{max-width:480px;margin:0 auto;padding:28px 20px}
+.setup{display:none;background:rgba(232,179,65,.1);border:1px solid rgba(232,179,65,.4);color:var(--warn);border-radius:12px;padding:13px 16px;margin-bottom:18px;font-size:13px}
+.setup.show{display:block}
+.setup code{font-family:var(--mono);color:var(--text)}
+
+.swap-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px}
+.swap-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.swap-head h1{font-family:var(--display);font-size:18px;font-weight:600}
+.gear{color:var(--muted);font-size:16px;padding:4px}
+.gear:hover{color:var(--text)}
+
+.leg{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px}
+.leg-top{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px}
+.leg-bal{cursor:pointer}
+.leg-bal:hover{color:var(--accent)}
+.leg-mid{display:flex;align-items:center;gap:10px}
+.amount-in{flex:1;background:none;border:none;font-family:var(--display);font-size:28px;font-weight:600;color:var(--text);min-width:0}
+.amount-in:focus{outline:none}
+.amount-in::placeholder{color:var(--muted)}
+.token-pick{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 6px;font-weight:600;font-size:15px;flex:none}
+.token-pick:hover{border-color:var(--accent)}
+.token-ic{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#fff;font-family:var(--display);flex:none}
+.token-pick .chev{color:var(--muted);font-size:12px}
+
+.switch-row{display:flex;justify-content:center;margin:-8px 0;position:relative;z-index:2}
+.switch-btn{width:36px;height:36px;border-radius:11px;background:var(--panel);border:3px solid var(--panel);background-clip:padding-box;display:grid;place-items:center;color:var(--accent);font-size:16px}
+.switch-btn:hover{color:var(--text)}
+.leg.out .amount-in{color:var(--muted)}
+
+.info{margin-top:14px;padding:0 4px;font-size:13px}
+.info-row{display:flex;justify-content:space-between;padding:4px 0;color:var(--muted)}
+.info-row .v{font-family:var(--mono);color:var(--text)}
+.info-row .v.warn{color:var(--warn)}
+.info-row .v.bad{color:var(--down)}
+
+.act{width:100%;margin-top:16px;padding:15px;border-radius:14px;font-weight:700;font-size:16px;transition:filter .12s}
+.act-accent{background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C}
+.act-accent:hover{filter:brightness(1.08)}
+.act-accent:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.act-warn{background:var(--warn);color:#2A1E00}
+
+.slip{display:none;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px}
+.slip.show{display:block}
+.slip label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:8px}
+.slip-opts{display:flex;gap:8px}
+.slip-opts button{flex:1;padding:7px;border-radius:8px;border:1px solid var(--line);background:var(--panel);font-size:13px;font-family:var(--mono)}
+.slip-opts button.on{border-color:var(--accent);color:var(--accent)}
+
+.note-cust{text-align:center;font-size:12px;color:var(--muted);margin-top:16px;line-height:1.6}
+.safety{background:rgba(232,179,65,.07);border:1px solid rgba(232,179,65,.25);border-radius:12px;padding:12px 15px;margin-top:16px;font-size:12px;color:var(--muted);line-height:1.6}
+.safety b{color:var(--warn)}
+
+.msg{display:none;text-align:center;font-size:13px;padding:10px;border-radius:10px;margin-top:12px}
+.msg.show{display:block}
+.msg.err{background:rgba(246,70,93,.12);color:var(--down)}
+.msg.ok{background:rgba(46,189,133,.12);color:var(--up)}
+.msg.info{background:var(--panel2);color:var(--muted)}
+
+.foot{max-width:480px;margin:0 auto;padding:14px 20px 34px;color:var(--muted);font-size:11.5px;text-align:center}
+
+.overlay{position:fixed;inset:0;background:rgba(4,8,13,.74);display:none;place-items:center;z-index:100;padding:20px}
+.overlay.open{display:grid}
+.tok-modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;width:min(360px,100%)}
+.tok-modal h3{font-family:var(--display);font-size:16px;margin-bottom:14px}
+.tok-item{display:flex;align-items:center;gap:11px;padding:11px;border-radius:10px;cursor:pointer}
+.tok-item:hover{background:var(--panel2)}
+.tok-item b{font-size:14px}
+.tok-item span{font-size:12px;color:var(--muted);display:block;font-family:var(--mono)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><span class="logo-mark">★</span>Dex<span class="cu">Cuba</span></div>
+  <nav class="topnav">
+    <a href="/">Panel</a>
+    <a href="/p2p.html">Mercado P2P</a>
+    <a href="/swap.html" class="active">Swap</a>
+    <a href="/escrow.html">Escrow</a>
+  </nav>
+  <div class="topbar-right">
+    <button class="wallet-btn" id="walletBtn" onclick="connectWallet()">Conectar TronLink</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="setup" id="setupBanner">
+    ⚙️ <b>Falta configurar el router.</b> Edita <code>ROUTER_ADDRESS</code> en <code>swap.html</code>
+    con la dirección verificada del router de SunSwap (obtenla en la documentación oficial de SunSwap /
+    TronScan). Mientras esté vacío, el swap está deshabilitado por seguridad.
+  </div>
+
+  <div class="swap-card">
+    <div class="swap-head">
+      <h1>Swap</h1>
+      <button class="gear" onclick="toggleSlip()" aria-label="Ajustes">⚙</button>
+    </div>
+
+    <div class="slip" id="slipBox">
+      <label>Tolerancia de slippage</label>
+      <div class="slip-opts" id="slipOpts">
+        <button data-v="0.1">0.1%</button>
+        <button data-v="0.5" class="on">0.5%</button>
+        <button data-v="1">1%</button>
+        <button data-v="3">3%</button>
+      </div>
+    </div>
+
+    <!-- FROM -->
+    <div class="leg">
+      <div class="leg-top"><span>Pagas</span><span class="leg-bal" id="balFrom" onclick="useMax()">Saldo: —</span></div>
+      <div class="leg-mid">
+        <input class="amount-in" id="amtIn" inputmode="decimal" placeholder="0.0" oninput="onAmountIn()">
+        <button class="token-pick" id="pickFrom" onclick="openTokens('from')">
+          <span class="token-ic" id="icFrom">U</span><span id="symFrom">USDT</span><span class="chev">▼</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="switch-row"><button class="switch-btn" onclick="flip()" aria-label="Invertir">↓</button></div>
+
+    <!-- TO -->
+    <div class="leg out">
+      <div class="leg-top"><span>Recibes (estimado)</span><span class="leg-bal" id="balTo">Saldo: —</span></div>
+      <div class="leg-mid">
+        <input class="amount-in" id="amtOut" placeholder="0.0" readonly>
+        <button class="token-pick" id="pickTo" onclick="openTokens('to')">
+          <span class="token-ic" id="icTo">T</span><span id="symTo">TRX</span><span class="chev">▼</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="info" id="infoBox" style="display:none">
+      <div class="info-row"><span>Tasa</span><span class="v" id="rateLine">—</span></div>
+      <div class="info-row"><span>Impacto de precio</span><span class="v" id="impactLine">—</span></div>
+      <div class="info-row"><span>Mínimo a recibir</span><span class="v" id="minOutLine">—</span></div>
+      <div class="info-row"><span>Comisión de red</span><span class="v">≈ Energía/Bandwidth (TRX)</span></div>
+    </div>
+
+    <button class="act act-accent" id="actBtn" onclick="onAction()" disabled>Conecta tu billetera</button>
+
+    <div class="msg" id="msg"></div>
+
+    <div class="note-cust">🔒 No-custodial · tú firmas cada operación desde TronLink.<br>DexCuba nunca toca tus fondos.</div>
+  </div>
+
+  <div class="safety">
+    <b>Antes de usar en mainnet:</b> verifica en TronScan la dirección del router y de cada token,
+    prueba primero en la testnet <b>Nile</b> con montos pequeños, y no apruebes contratos que no reconozcas.
+    En pares con poca liquidez el slippage puede ser alto — revisa el impacto de precio antes de confirmar.
+  </div>
+</div>
+
+<footer class="foot">DexCuba Swap · interfaz no-custodial sobre SunSwap (TRON). Opera bajo tu propio riesgo.</footer>
+
+<!-- Modal selección de token -->
+<div class="overlay" id="tokOverlay" role="dialog" aria-modal="true" aria-label="Elegir token">
+  <div class="tok-modal">
+    <h3>Elige un token</h3>
+    <div id="tokList"></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN — VERIFICAR ANTES DE MAINNET
+   ---------------------------------------------------------------------
+   ROUTER_ADDRESS: router de SunSwap (estilo Uniswap V2) en TRON.
+   Déjalo vacío hasta pegar la dirección OFICIAL verificada en TronScan.
+   WTRX_ADDRESS: TRX envuelto, usado en la ruta cuando intercambias TRX.
+   Los contratos de tokens también deben verificarse en TronScan.
+   Empieza en la testnet Nile antes de tocar mainnet.
+   ===================================================================== */
+const ROUTER_ADDRESS = ''; // <-- PEGAR router SunSwap verificado
+const WTRX_ADDRESS   = ''; // <-- PEGAR dirección WTRX verificada
+
+// Lista de tokens (contratos TRC-20 mainnet verificados por ti).
+// 'native' marca TRX. USDT-TRC20 es el contrato ampliamente documentado;
+// verifícalo igualmente en TronScan antes de operar en serio.
+const TOKENS = [
+  { sym:'TRX',  name:'TRON',        addr:'native', decimals:6, color:'#EF0027', ic:'T' },
+  { sym:'USDT', name:'Tether TRC-20', addr:'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', decimals:6, color:'#26A17B', ic:'U' },
+  // Añade aquí más tokens TRC-20 tras verificar su contrato:
+  // { sym:'USDD', name:'Decentralized USD', addr:'T...', decimals:18, color:'#3F7CF6', ic:'D' },
+];
+
+const ROUTER_ABI = [
+  {"constant":true,"inputs":[{"name":"amountIn","type":"uint256"},{"name":"path","type":"address[]"}],"name":"getAmountsOut","outputs":[{"name":"amounts","type":"uint256[]"}],"stateMutability":"view","type":"function"},
+  {"constant":false,"inputs":[{"name":"amountIn","type":"uint256"},{"name":"amountOutMin","type":"uint256"},{"name":"path","type":"address[]"},{"name":"to","type":"address"},{"name":"deadline","type":"uint256"}],"name":"swapExactTokensForTokens","outputs":[{"name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},
+  {"constant":false,"inputs":[{"name":"amountOutMin","type":"uint256"},{"name":"path","type":"address[]"},{"name":"to","type":"address"},{"name":"deadline","type":"uint256"}],"name":"swapExactETHForTokens","outputs":[{"name":"amounts","type":"uint256[]"}],"stateMutability":"payable","type":"function"},
+  {"constant":false,"inputs":[{"name":"amountIn","type":"uint256"},{"name":"amountOutMin","type":"uint256"},{"name":"path","type":"address[]"},{"name":"to","type":"address"},{"name":"deadline","type":"uint256"}],"name":"swapExactTokensForETH","outputs":[{"name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"}
+];
+
+let account=null, tw=null;
+let from=TOKENS[1], to=TOKENS[0]; // USDT -> TRX por defecto
+let slippage=0.5, picking='from', quote=null;
+
+/* ---------- util ---------- */
+const $=id=>document.getElementById(id);
+function toUnits(v,d){return BigInt(Math.round(Number(v)*10**Math.min(d,9)))*(10n**BigInt(Math.max(0,d-9)));}
+function fromUnits(bi,d){return Number(bi)/10**d;}
+function fmt(n,mx=6){return Number(n).toLocaleString('en-US',{maximumFractionDigits:mx});}
+function showMsg(t,cls){const m=$('msg');m.textContent=t;m.className='msg show '+cls;}
+function clearMsg(){$('msg').className='msg';}
+
+/* ---------- setup gate ---------- */
+if(!ROUTER_ADDRESS){$('setupBanner').classList.add('show');}
+
+/* ---------- token modal ---------- */
+function openTokens(which){
+  picking=which;
+  $('tokList').innerHTML=TOKENS.map((t,i)=>`
+    <div class="tok-item" onclick="chooseToken(${i})">
+      <span class="token-ic" style="background:${t.color}">${t.ic}</span>
+      <div><b>${t.sym}</b><span>${t.name}</span></div>
+    </div>`).join('');
+  $('tokOverlay').classList.add('open');
+}
+function chooseToken(i){
+  const t=TOKENS[i];
+  if(picking==='from'){ if(t.sym===to.sym)to=from; from=t; }
+  else { if(t.sym===from.sym)from=to; to=t; }
+  $('tokOverlay').classList.remove('open');
+  renderTokens(); refreshBalances(); onAmountIn();
+}
+$('tokOverlay').addEventListener('click',e=>{if(e.target.id==='tokOverlay')e.currentTarget.classList.remove('open');});
+function renderTokens(){
+  $('symFrom').textContent=from.sym; $('icFrom').textContent=from.ic; $('icFrom').style.background=from.color;
+  $('symTo').textContent=to.sym; $('icTo').textContent=to.ic; $('icTo').style.background=to.color;
+}
+function flip(){const t=from;from=to;to=t;renderTokens();refreshBalances();onAmountIn();}
+
+/* ---------- slippage ---------- */
+function toggleSlip(){$('slipBox').classList.toggle('show');}
+document.querySelectorAll('#slipOpts button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#slipOpts button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');slippage=parseFloat(b.dataset.v);onAmountIn();
+});
+
+/* ---------- wallet ---------- */
+async function connectWallet(){
+  if(!window.tronLink&&!window.tronWeb){showMsg('No se detectó TronLink. Instálalo desde tronlink.org y recarga.','err');window.open('https://www.tronlink.org/','_blank');return;}
+  try{
+    if(window.tronLink&&window.tronLink.request){
+      const res=await window.tronLink.request({method:'tron_requestAccounts'});
+      if(res&&res.code&&res.code!==200){showMsg('Conexión rechazada.','err');return;}
+    }
+    tw=window.tronWeb;
+    if(!tw||!tw.defaultAddress||!tw.defaultAddress.base58){showMsg('Desbloquea TronLink y reintenta.','err');return;}
+    account=tw.defaultAddress.base58;
+    const short=account.slice(0,5)+'…'+account.slice(-4);
+    $('walletBtn').textContent=short; $('walletBtn').classList.add('on');
+    clearMsg(); refreshBalances(); onAmountIn();
+  }catch(e){showMsg('No se pudo conectar: '+(e.message||e),'err');}
+}
+
+async function trc20(addr){return await tw.contract().at(addr);}
+async function balanceOf(token){
+  if(!account)return null;
+  if(token.addr==='native'){const b=await tw.trx.getBalance(account);return fromUnits(BigInt(b),6);}
+  const c=await trc20(token.addr);const b=await c.balanceOf(account).call();
+  return fromUnits(BigInt(b.toString()),token.decimals);
+}
+async function refreshBalances(){
+  if(!account){$('balFrom').textContent='Saldo: —';$('balTo').textContent='Saldo: —';return;}
+  try{
+    const [bf,bt]=await Promise.all([balanceOf(from),balanceOf(to)]);
+    $('balFrom').textContent='Saldo: '+fmt(bf,4)+' '+from.sym;
+    $('balTo').textContent='Saldo: '+fmt(bt,4)+' '+to.sym;
+    $('balFrom').dataset.bal=bf;
+  }catch(e){/* silencio */}
+}
+function useMax(){const b=$('balFrom').dataset.bal;if(b){$('amtIn').value=b;onAmountIn();}}
+
+/* ---------- rutas y cotización ---------- */
+function pathFor(){
+  const a=from.addr==='native'?WTRX_ADDRESS:from.addr;
+  const b=to.addr==='native'?WTRX_ADDRESS:to.addr;
+  return [a,b];
+}
+let quoteTimer;
+function onAmountIn(){
+  clearTimeout(quoteTimer);
+  const v=parseFloat(($('amtIn').value||'').replace(',','.'));
+  if(!v||v<=0){$('amtOut').value='';$('infoBox').style.display='none';updateAction();return;}
+  quoteTimer=setTimeout(()=>getQuote(v),350);
+}
+async function getQuote(v){
+  updateAction('...');
+  if(!tw){$('amtOut').value='';updateAction();return;}
+  if(!ROUTER_ADDRESS){showMsg('Router no configurado.','err');return;}
+  if((from.addr==='native'||to.addr==='native')&&!WTRX_ADDRESS){showMsg('Falta WTRX para rutas con TRX.','err');return;}
+  try{
+    const router=await tw.contract(ROUTER_ABI,ROUTER_ADDRESS);
+    const amountIn=toUnits(v,from.decimals);
+    const res=await router.getAmountsOut(amountIn.toString(),pathFor()).call();
+    const outBI=BigInt(res.amounts?res.amounts[res.amounts.length-1].toString():res[res.length-1].toString());
+    const out=fromUnits(outBI,to.decimals);
+    quote={amountIn,out,outBI,v};
+    $('amtOut').value=fmt(out,6);
+    const rate=out/v;
+    $('rateLine').textContent='1 '+from.sym+' ≈ '+fmt(rate,6)+' '+to.sym;
+    const minOut=out*(1-slippage/100);
+    $('minOutLine').textContent=fmt(minOut,6)+' '+to.sym;
+    $('impactLine').textContent='ver en SunSwap';
+    $('infoBox').style.display='block';
+    clearMsg(); updateAction();
+  }catch(e){$('amtOut').value='';showMsg('Sin ruta/liquidez para este par.','err');updateAction();}
+}
+
+/* ---------- acción: aprobar / swap ---------- */
+function updateAction(state){
+  const btn=$('actBtn');
+  if(state==='...'){btn.disabled=true;btn.textContent='Calculando…';return;}
+  if(!account){btn.disabled=true;btn.textContent='Conecta tu billetera';return;}
+  if(!ROUTER_ADDRESS){btn.disabled=true;btn.textContent='Router no configurado';return;}
+  if(!quote){btn.disabled=true;btn.textContent='Ingresa un monto';return;}
+  btn.disabled=false;btn.textContent='Intercambiar';
+}
+async function onAction(){
+  if(!quote||!account)return;
+  const btn=$('actBtn');btn.disabled=true;
+  try{
+    const deadline=Math.floor(Date.now()/1000)+600;
+    const minOut=(quote.outBI*BigInt(Math.round((1-slippage/100)*1000)))/1000n;
+    const router=await tw.contract(ROUTER_ABI,ROUTER_ADDRESS);
+    const path=pathFor();
+
+    if(from.addr!=='native'){
+      showMsg('Aprobando '+from.sym+'…','info');
+      const token=await trc20(from.addr);
+      await token.approve(ROUTER_ADDRESS,quote.amountIn.toString()).send();
+    }
+    showMsg('Confirma el swap en TronLink…','info');
+    let tx;
+    if(from.addr==='native'){
+      tx=await router.swapExactETHForTokens(minOut.toString(),path,account,deadline).send({callValue:quote.amountIn.toString()});
+    }else if(to.addr==='native'){
+      tx=await router.swapExactTokensForETH(quote.amountIn.toString(),minOut.toString(),path,account,deadline).send();
+    }else{
+      tx=await router.swapExactTokensForTokens(quote.amountIn.toString(),minOut.toString(),path,account,deadline).send();
+    }
+    showMsg('✓ Swap enviado. Tx: '+String(tx).slice(0,10)+'…','ok');
+    $('amtIn').value='';$('amtOut').value='';quote=null;
+    setTimeout(refreshBalances,4000);
+  }catch(e){showMsg('Cancelado o fallido: '+(e.message||e),'err');}
+  updateAction();
+}
+
+/* ---------- init ---------- */
+renderTokens();
+if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58){connectWallet();}
+</script>
+</body>
+</html>

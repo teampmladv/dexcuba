@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DexCuba — Escrow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A1018; --panel:#101826; --panel2:#16202F; --line:#243247;
+  --text:#EAF0F6; --muted:#8A99AD; --accent:#1FC7B6; --accent-deep:#0E9C8D;
+  --flag-red:#D3273E; --up:#2EBD85; --down:#F6465D; --warn:#E8B341; --radius:14px;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;color:var(--text)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.topbar{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,16,24,.92);backdrop-filter:blur(8px);z-index:50}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px}
+.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#E23A52,var(--flag-red));display:grid;place-items:center;color:#fff;font-size:14px}
+.logo .cu{color:var(--accent)}
+.topnav{display:flex;gap:4px;margin-left:8px}
+.topnav a{padding:8px 14px;border-radius:8px;color:var(--muted);font-size:14px;font-weight:500}
+.topnav a:hover{color:var(--text);background:var(--panel2)}
+.topnav a.active{color:var(--accent)}
+.topbar-right{margin-left:auto}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.bal-pill{display:none;font-family:var(--mono);font-size:12.5px;color:var(--accent);border:1px solid var(--line);padding:7px 12px;border-radius:999px}
+.wallet-btn{padding:9px 18px;border-radius:10px;font-weight:700;font-size:13.5px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C;transition:filter .12s}
+.wallet-btn:hover{filter:brightness(1.08)}
+.wallet-btn.on{background:var(--panel2);border:1px solid var(--accent);color:var(--accent);font-weight:600}
+
+.wrap{max-width:940px;margin:0 auto;padding:26px 20px}
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.col{display:flex;flex-direction:column;gap:18px}
+@media(max-width:760px){.cards-grid{grid-template-columns:1fr}}
+.setup{display:none;background:rgba(232,179,65,.1);border:1px solid rgba(232,179,65,.4);color:var(--warn);border-radius:12px;padding:13px 16px;margin-bottom:18px;font-size:13px}
+.setup.show{display:block}
+.setup code{font-family:var(--mono);color:var(--text)}
+
+.offer-ctx{display:none;background:rgba(31,199,182,.08);border:1px solid rgba(31,199,182,.3);border-radius:12px;padding:13px 16px;margin-bottom:18px}
+.offer-ctx.show{display:block}
+.offer-ctx b{font-family:var(--display);font-size:14px}
+.offer-ctx .oc-line{font-family:var(--mono);font-size:12.5px;color:var(--accent);margin:5px 0}
+.offer-ctx .oc-help{font-size:12px;color:var(--muted);line-height:1.5}
+
+.flow{display:flex;gap:8px;margin-bottom:20px;font-size:11.5px;color:var(--muted)}
+.flow .step{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 8px;text-align:center;line-height:1.35}
+.flow .step b{display:block;color:var(--text);font-size:12.5px;font-family:var(--display)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px}
+.card h2{font-family:var(--display);font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card .role{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--panel2);color:var(--accent);border:1px solid var(--line)}
+.card .desc{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.field input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;font-family:var(--mono)}
+.field input:focus{outline:none;border-color:var(--accent)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{width:100%;padding:12px;border-radius:11px;font-weight:600;font-size:14px;transition:filter .12s}
+.btn-accent{background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C}
+.btn-accent:hover{filter:brightness(1.08)}
+.btn-accent:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btn-ghost{border:1px solid var(--line);background:var(--panel2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{border:1px solid rgba(246,70,93,.4);background:rgba(246,70,93,.08);color:var(--down)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.lookup{display:flex;gap:8px}
+.lookup input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;font-family:var(--mono)}
+.lookup input::placeholder{color:var(--muted)}
+.lookup input:focus{outline:none;border-color:var(--accent)}
+.card .lookup button{flex:none;width:auto;padding:0 20px}
+.fee-preview{font-size:12px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5}
+.fee-preview b{color:var(--accent)}
+.card{margin-bottom:0}
+.trade-view{display:none;margin-top:14px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:14px}
+.trade-view.show{display:block}
+.tv-row{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0}
+.tv-row .k{color:var(--muted)}
+.tv-row .v{font-family:var(--mono);word-break:break-all;text-align:right;max-width:70%}
+.state-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px}
+.state-FUNDED{background:rgba(232,179,65,.14);color:var(--warn)}
+.state-PAID{background:rgba(31,199,182,.14);color:var(--accent)}
+.state-RELEASED{background:rgba(46,189,133,.14);color:var(--up)}
+.state-REFUNDED{background:rgba(138,153,173,.14);color:var(--muted)}
+
+.msg{display:none;text-align:center;font-size:13px;padding:10px;border-radius:10px;margin-top:12px}
+.msg.show{display:block}
+.msg.err{background:rgba(246,70,93,.12);color:var(--down)}
+.msg.ok{background:rgba(46,189,133,.12);color:var(--up)}
+.msg.info{background:var(--panel2);color:var(--muted)}
+
+.safety{background:rgba(232,179,65,.07);border:1px solid rgba(232,179,65,.25);border-radius:12px;padding:12px 15px;margin-top:8px;font-size:12px;color:var(--muted);line-height:1.6}
+.safety b{color:var(--warn)}
+.foot{max-width:940px;margin:0 auto;padding:14px 20px 34px;color:var(--muted);font-size:11.5px;text-align:center}
+@media(max-width:520px){.two,.btn-row{grid-template-columns:1fr}.flow{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><span class="logo-mark">★</span>Dex<span class="cu">Cuba</span></div>
+  <nav class="topnav">
+    <a href="/">Panel</a>
+    <a href="/swap.html">Swap</a>
+    <a href="/p2p.html">Mercado P2P</a>
+    <a href="/escrow.html" class="active">Escrow</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="bal-pill" id="balPill"></span>
+    <button class="wallet-btn" id="walletBtn" onclick="connectWallet()">Conectar TronLink</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="setup" id="setupBanner">
+    ⚙️ <b>Falta configurar el contrato.</b> Despliega <code>DexCubaEscrow.sol</code> en la testnet Nile,
+    y pega su dirección en <code>ESCROW_ADDRESS</code> dentro de <code>escrow.html</code>. Mientras esté vacío,
+    las acciones están deshabilitadas por seguridad.
+  </div>
+
+  <div class="offer-ctx" id="offerCtx"></div>
+
+  <div class="flow">
+    <div class="step"><b>1 · Bloquea</b>Vendedor deposita USDT</div>
+    <div class="step"><b>2 · Paga CUP</b>Comprador paga fuera de la cadena</div>
+    <div class="step"><b>3 · Libera</b>Vendedor confirma → USDT al comprador</div>
+    <div class="step"><b>Disputa</b>Árbitro decide</div>
+  </div>
+
+  <div class="cards-grid">
+    <!-- Columna izquierda: bloquear (acción principal del vendedor) -->
+    <div class="col">
+      <div class="card">
+        <h2>Bloquear USDT <span class="role">Vendedor</span></h2>
+        <p class="desc">Depositas el USDT en el contrato. Primero se aprueba el gasto y luego se crea el trade. Guarda el ID que aparecerá.</p>
+        <div class="field">
+          <label>Dirección del comprador (TRON)</label>
+          <input id="cBuyer" placeholder="T...">
+        </div>
+        <div class="field">
+          <label>Dirección del árbitro (TRON)</label>
+          <input id="cArb" placeholder="T...">
+        </div>
+        <div class="field">
+          <label>Monto en USDT</label>
+          <input id="cAmount" inputmode="decimal" placeholder="100" oninput="updateFeePreview()">
+        </div>
+        <div class="fee-preview" id="feePreview">Comisión DexCuba 0,5% · se descuenta al liberarse (en reembolsos no se cobra).</div>
+        <button class="btn btn-accent" id="btnCreate" onclick="createTrade()" disabled>Aprobar y bloquear</button>
+      </div>
+    </div>
+
+    <!-- Columna derecha: consultar y acciones -->
+    <div class="col">
+      <div class="card">
+        <h2>Consultar un trade</h2>
+        <p class="desc">Introduce el ID del trade para ver su estado actual.</p>
+        <div class="lookup">
+          <input id="lookupId" inputmode="numeric" placeholder="ID del trade (ej. 1)">
+          <button class="btn btn-ghost" onclick="viewTrade()">Ver</button>
+        </div>
+        <div class="trade-view" id="tradeView"></div>
+      </div>
+
+      <div class="card">
+        <h2>Marcar CUP pagado <span class="role">Comprador</span></h2>
+        <p class="desc">Tras enviar el CUP al vendedor por fuera, marca el trade como pagado para proteger tu operación.</p>
+        <div class="field">
+          <label>ID del trade</label>
+          <input id="pId" inputmode="numeric" placeholder="1">
+        </div>
+        <button class="btn btn-accent" id="btnPaid" onclick="markPaid()" disabled>Marcar como pagado</button>
+      </div>
+
+      <div class="card">
+        <h2>Liberar o reembolsar <span class="role">Vendedor / Árbitro</span></h2>
+        <p class="desc">Liberar envía el USDT al comprador (vendedor confirma, o árbitro en disputa). Reembolsar lo devuelve al vendedor (árbitro, o vendedor tras el plazo si no hubo pago).</p>
+        <div class="field">
+          <label>ID del trade</label>
+          <input id="rId" inputmode="numeric" placeholder="1">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-accent" id="btnRelease" onclick="doRelease()" disabled>Liberar al comprador</button>
+          <button class="btn btn-danger" id="btnRefund" onclick="doRefund()" disabled>Reembolsar al vendedor</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="safety">
+    <b>Contrato sin auditar.</b> Pruébalo en la testnet <b>Nile</b> con montos pequeños y encarga una auditoría
+    antes de mover dinero real. El árbitro es un punto de confianza: idealmente debe ser un multisig o un
+    tercero neutral, no una sola llave. El árbitro solo puede enviar los fondos al comprador o al vendedor,
+    nunca a sí mismo.
+  </div>
+</div>
+
+<footer class="foot">DexCuba Escrow · contrato no-custodial sobre TRON. Los fondos solo salen a comprador o vendedor.</footer>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN — VERIFICAR ANTES DE MAINNET
+   ESCROW_ADDRESS: dirección del contrato DexCubaEscrow desplegado.
+   USDT_ADDRESS: token bloqueado (debe coincidir con el del constructor).
+   Empieza SIEMPRE en la testnet Nile.
+   ===================================================================== */
+const ESCROW_ADDRESS = ''; // <-- PEGAR dirección del contrato desplegado
+const USDT_ADDRESS   = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'; // USDT-TRC20 mainnet (verifícalo)
+const USDT_DECIMALS  = 6;
+const FEE_BPS        = 50; // 0,5% — debe coincidir con el feeBps del contrato desplegado
+
+const ESCROW_ABI = [
+  {"inputs":[{"name":"buyer","type":"address"},{"name":"arbitrator","type":"address"},{"name":"amount","type":"uint256"}],"name":"createTrade","outputs":[{"name":"id","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"id","type":"uint256"}],"name":"markPaid","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"id","type":"uint256"}],"name":"release","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"id","type":"uint256"}],"name":"refund","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"id","type":"uint256"}],"name":"getTrade","outputs":[{"name":"seller","type":"address"},{"name":"buyer","type":"address"},{"name":"arbitrator","type":"address"},{"name":"amount","type":"uint256"},{"name":"fundedAt","type":"uint64"},{"name":"state","type":"uint8"}],"stateMutability":"view","type":"function"}
+];
+const TRC20_ABI=[
+  {"constant":false,"inputs":[{"name":"spender","type":"address"},{"name":"value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+  {"constant":true,"inputs":[{"name":"who","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+];
+const STATES=['NONE','FUNDED','PAID','RELEASED','REFUNDED'];
+
+let account=null, tw=null;
+const $=id=>document.getElementById(id);
+function showMsg(t,c){const m=$('msg');m.textContent=t;m.className='msg show '+c;}
+function clearMsg(){$('msg').className='msg';}
+function toUnits(v){return BigInt(Math.round(Number(v)*10**USDT_DECIMALS));}
+
+if(!ESCROW_ADDRESS){$('setupBanner').classList.add('show');}
+
+function updateFeePreview(){
+  const v=parseFloat(($('cAmount').value||'').replace(',','.'));
+  const el=$('feePreview');
+  if(!v||v<=0){el.innerHTML='Comisión DexCuba 0,5% · se descuenta al liberarse (en reembolsos no se cobra).';return;}
+  const fee=v*FEE_BPS/10000, net=v-fee;
+  el.innerHTML='Comisión DexCuba (0,5%): <b>'+fee.toFixed(2)+' USDT</b> · el comprador recibe <b>'+net.toFixed(2)+' USDT</b>. Solo se cobra al liberar.';
+}
+
+async function connectWallet(){
+  if(!window.tronLink&&!window.tronWeb){
+    showMsg('No se detectó TronLink. Instálalo desde tronlink.org y recarga.','err');
+    window.open('https://www.tronlink.org/','_blank');
+    return;
+  }
+  try{
+    if(window.tronLink&&window.tronLink.request){await window.tronLink.request({method:'tron_requestAccounts'});}
+    tw=window.tronWeb;
+    if(!tw||!tw.defaultAddress||!tw.defaultAddress.base58){showMsg('Desbloquea TronLink y reintenta.','err');return;}
+    account=tw.defaultAddress.base58;
+    $('walletBtn').textContent=account.slice(0,5)+'…'+account.slice(-4);
+    $('walletBtn').classList.add('on');
+    enableActions();clearMsg();showBalance();
+  }catch(e){showMsg('No se pudo conectar: '+(e.message||e),'err');}
+}
+async function showBalance(){
+  try{
+    const c=await tw.contract(TRC20_ABI,USDT_ADDRESS);
+    const b=await c.balanceOf(account).call();
+    const v=Number(BigInt(b.toString()))/10**USDT_DECIMALS;
+    const el=$('balPill');el.style.display='inline-block';el.textContent=v.toFixed(2)+' USDT';
+  }catch(e){/* red distinta o token no presente */}
+}
+if(window.tronLink&&window.tronLink.on){window.tronLink.on('accountsChanged',()=>location.reload());}
+function enableActions(){
+  const ok=account&&ESCROW_ADDRESS;
+  ['btnCreate','btnPaid','btnRelease','btnRefund'].forEach(id=>$(id).disabled=!ok);
+}
+
+async function escrow(){return await tw.contract(ESCROW_ABI,ESCROW_ADDRESS);}
+
+async function createTrade(){
+  const buyer=$('cBuyer').value.trim(), arb=$('cArb').value.trim();
+  const amt=parseFloat($('cAmount').value);
+  if(!tw.isAddress(buyer)){showMsg('Dirección de comprador inválida.','err');return;}
+  if(!tw.isAddress(arb)){showMsg('Dirección de árbitro inválida.','err');return;}
+  if(!amt||amt<=0){showMsg('Monto inválido.','err');return;}
+  const units=toUnits(amt).toString();
+  try{
+    showMsg('1/2 · Aprobando USDT en TronLink…','info');
+    const usdt=await tw.contract(TRC20_ABI,USDT_ADDRESS);
+    await usdt.approve(ESCROW_ADDRESS,units).send();
+    showMsg('2/2 · Creando y financiando el trade…','info');
+    const c=await escrow();
+    const tx=await c.createTrade(buyer,arb,units).send();
+    showMsg('✓ USDT bloqueado. Tx: '+String(tx).slice(0,10)+'… — revisa el evento Created para tu ID.','ok');
+  }catch(e){showMsg('Fallido o cancelado: '+(e.message||e),'err');}
+}
+
+async function markPaid(){
+  const id=$('pId').value.trim();if(!id){showMsg('Indica el ID.','err');return;}
+  try{showMsg('Marcando pagado…','info');const c=await escrow();const tx=await c.markPaid(id).send();
+    showMsg('✓ Marcado como pagado. Tx: '+String(tx).slice(0,10)+'…','ok');}
+  catch(e){showMsg('Fallido: '+(e.message||e),'err');}
+}
+async function doRelease(){
+  const id=$('rId').value.trim();if(!id){showMsg('Indica el ID.','err');return;}
+  try{showMsg('Liberando al comprador…','info');const c=await escrow();const tx=await c.release(id).send();
+    showMsg('✓ USDT liberado al comprador. Tx: '+String(tx).slice(0,10)+'…','ok');}
+  catch(e){showMsg('Fallido: '+(e.message||e),'err');}
+}
+async function doRefund(){
+  const id=$('rId').value.trim();if(!id){showMsg('Indica el ID.','err');return;}
+  try{showMsg('Reembolsando al vendedor…','info');const c=await escrow();const tx=await c.refund(id).send();
+    showMsg('✓ USDT reembolsado al vendedor. Tx: '+String(tx).slice(0,10)+'…','ok');}
+  catch(e){showMsg('Fallido: '+(e.message||e),'err');}
+}
+
+async function viewTrade(){
+  const id=$('lookupId').value.trim();const tvEl=$('tradeView');
+  if(!id){showMsg('Indica el ID.','err');return;}
+  if(!ESCROW_ADDRESS){showMsg('Contrato no configurado.','err');return;}
+  if(!tw){showMsg('Conecta TronLink para consultar.','err');return;}
+  try{
+    const c=await escrow();const t=await c.getTrade(id).call();
+    const state=STATES[Number(t.state||t[5])]||'NONE';
+    if(state==='NONE'){tvEl.className='trade-view show';tvEl.innerHTML='<div class="tv-row"><span class="k">No existe un trade con ese ID.</span></div>';return;}
+    const amt=Number(BigInt(t.amount.toString()))/10**USDT_DECIMALS;
+    const b58=a=>tw.address.fromHex(a);
+    tvEl.className='trade-view show';
+    tvEl.innerHTML=`
+      <div class="tv-row"><span class="k">Estado</span><span class="state-badge state-${state}">${state}</span></div>
+      <div class="tv-row"><span class="k">Monto</span><span class="v">${amt} USDT</span></div>
+      <div class="tv-row"><span class="k">Vendedor</span><span class="v">${b58(t.seller)}</span></div>
+      <div class="tv-row"><span class="k">Comprador</span><span class="v">${b58(t.buyer)}</span></div>
+      <div class="tv-row"><span class="k">Árbitro</span><span class="v">${b58(t.arbitrator)}</span></div>`;
+    clearMsg();
+  }catch(e){showMsg('No se pudo consultar: '+(e.message||e),'err');}
+}
+
+if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58){connectWallet();}
+
+/* ---- Contexto de oferta (deep-link desde el tablero P2P) ---- */
+function escHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+(function(){
+  const q=new URLSearchParams(location.search);
+  const asset=q.get('asset');
+  if(!asset)return;
+  const side=q.get('side'), rate=q.get('rate'), min=q.get('min'), max=q.get('max'), contact=q.get('contact');
+  const sideBadge=side==='vendo'?'VENDE':'COMPRA';
+  const who=side==='vendo'
+    ? 'El anunciante vende '+asset+', así que es él quien deposita el USDT. Coordinen para que el vendedor bloquee y tú (comprador) marques el CUP pagado.'
+    : 'El anunciante compra '+asset+'. Si tú eres quien vende USDT, tú depositas aquí abajo.';
+  const el=document.getElementById('offerCtx');
+  el.className='offer-ctx show';
+  el.innerHTML='<b>Escrow para una oferta del mercado</b>'
+    +'<div class="oc-line">'+sideBadge+' '+escHtml(asset)+' · '+escHtml(rate||'?')+' CUP/USD · límites $'+escHtml(min||'?')+'–$'+escHtml(max||'?')+(contact?' · '+escHtml(contact):'')+'</div>'
+    +'<div class="oc-help">'+who+' Intercambien sus direcciones TRON por el chat de contacto antes de bloquear.</div>';
+  if(max)document.getElementById('cAmount').value=max;
+})();
+</script>
+</body>
+</html>
