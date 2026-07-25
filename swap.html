@@ -24,9 +24,12 @@ a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 
 .topbar{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,16,24,.92);backdrop-filter:blur(8px);z-index:50}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px}
-.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#E23A52,var(--flag-red));display:grid;place-items:center;color:#fff;font-size:14px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.02em;transition:opacity .15s}
+.logo-mark{width:30px;height:30px;flex:none;display:block}
+.logo-mark svg{width:100%;height:100%;display:block}
+.logo:hover{opacity:.82}
 .logo .cu{color:var(--accent)}
+.net-badge{font-size:10.5px;font-weight:700;background:var(--muted);color:#0A1018;padding:3px 8px;border-radius:6px;letter-spacing:.04em}
 .topnav{display:flex;gap:4px;margin-left:8px}
 .topnav a{padding:8px 14px;border-radius:8px;color:var(--muted);font-size:14px;font-weight:500}
 .topnav a:hover{color:var(--text);background:var(--panel2)}
@@ -105,27 +108,44 @@ a{color:inherit;text-decoration:none}
 .tok-item b{font-size:14px}
 .tok-item span{font-size:12px;color:var(--muted);display:block;font-family:var(--mono)}
 </style>
+<meta property="og:title" content="DexCuba">
+<meta property="og:description" content="Mercado P2P de USDT por CUP con escrow. Sin custodia.">
+<meta property="og:image" content="/icon-512.png">
+<meta property="og:url" content="https://dexcuba.com">
+<meta property="og:type" content="website">
+<meta name="application-name" content="DexCuba">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0A1018">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DexCuba">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/mobile.css">
+<meta http-equiv="refresh" content="0;url=/convertir.html">
 </head>
 <body>
 
 <header class="topbar">
-  <div class="logo"><span class="logo-mark">★</span>Dex<span class="cu">Cuba</span></div>
+  <a class="logo" href="/" aria-label="DexCuba — ir al inicio"><span class="logo-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><rect x="0" y="0" width="120" height="120" rx="26" fill="#D3273E"/><circle cx="60" cy="60" r="42" fill="none" stroke="#fff" stroke-width="4" opacity=".35"/><path d="M60 24 L70 50 L98 50 L75 66 L84 93 L60 76 L36 93 L45 66 L22 50 L50 50 Z" fill="#fff"/><circle cx="60" cy="60" r="9" fill="#1FC7B6"/></svg></span>Dex<span class="cu">Cuba</span> <span class="net-badge">SWAP</span></a>
   <nav class="topnav">
-    <a href="/">Panel</a>
-    <a href="/p2p.html">Mercado P2P</a>
-    <a href="/swap.html" class="active">Swap</a>
-    <a href="/escrow.html">Escrow</a>
+    <a href="/" data-short="Inicio">Panel</a>
+    <a href="/p2p.html" data-short="P2P">Mercado P2P</a>
+    <a href="/cuenta.html" data-short="Cuenta">Mi cuenta</a>
+    <a href="/convertir.html" class="active" data-short="Swap">Swap</a>
+    <a href="/escrow.html" data-short="Escrow">Escrow</a>
   </nav>
   <div class="topbar-right">
-    <button class="wallet-btn" id="walletBtn" onclick="connectWallet()">Conectar TronLink</button>
+    <button class="wallet-btn" id="walletBtn" onclick="connectWallet()">Conectar wallet</button>
   </div>
 </header>
 
 <div class="wrap">
-  <div class="setup" id="setupBanner">
-    ⚙️ <b>Falta configurar el router.</b> Edita <code>ROUTER_ADDRESS</code> en <code>swap.html</code>
-    con la dirección verificada del router de SunSwap (obtenla en la documentación oficial de SunSwap /
-    TronScan). Mientras esté vacío, el swap está deshabilitado por seguridad.
+  <div class="setup show" id="setupBanner">
+    🚧 <b>Próximamente.</b> El intercambio directo entre criptomonedas aún no está activo.
+    Mientras tanto, para cambiar USDT por pesos cubanos usa el
+    <a href="/p2p.html" style="color:var(--accent)" data-short="P2P">Mercado P2P</a>, que es donde está toda
+    la actividad de DexCuba.
   </div>
 
   <div class="swap-card">
@@ -179,17 +199,17 @@ a{color:inherit;text-decoration:none}
 
     <div class="msg" id="msg"></div>
 
-    <div class="note-cust">🔒 No-custodial · tú firmas cada operación desde TronLink.<br>DexCuba nunca toca tus fondos.</div>
+    <div class="note-cust">🔒 No-custodial · tú firmas cada operación desde tu wallet.<br>DexCuba nunca toca tus fondos.</div>
   </div>
 
   <div class="safety">
-    <b>Antes de usar en mainnet:</b> verifica en TronScan la dirección del router y de cada token,
-    prueba primero en la testnet <b>Nile</b> con montos pequeños, y no apruebes contratos que no reconozcas.
-    En pares con poca liquidez el slippage puede ser alto — revisa el impacto de precio antes de confirmar.
+    <b>Cuando esté disponible, opera con cabeza:</b> revisa el impacto de precio antes de confirmar
+    (en pares con poca liquidez puede ser alto), empieza con importes pequeños y no apruebes
+    contratos que no reconozcas. Las operaciones on-chain son irreversibles.
   </div>
 </div>
 
-<footer class="foot">DexCuba Swap · interfaz no-custodial sobre SunSwap (TRON). Opera bajo tu propio riesgo.</footer>
+<footer class="foot">DexCuba Swap · interfaz no-custodial sobre SunSwap (TRON). Opera bajo tu propio riesgo.<br><a href="/legal.html#terminos" style="color:var(--muted);text-decoration:underline">Términos</a> · <a href="/legal.html#privacidad" style="color:var(--muted);text-decoration:underline">Privacidad</a> · <a href="/legal.html#cookies" style="color:var(--muted);text-decoration:underline">Cookies</a> · <a href="/legal.html#riesgos" style="color:var(--muted);text-decoration:underline">Riesgos</a></footer>
 
 <!-- Modal selección de token -->
 <div class="overlay" id="tokOverlay" role="dialog" aria-modal="true" aria-label="Elegir token">
@@ -199,6 +219,8 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<script src="/config.js"></script>
+<script src="/wallet.js"></script>
 <script>
 /* =====================================================================
    CONFIGURACIÓN — VERIFICAR ANTES DE MAINNET
@@ -209,8 +231,9 @@ a{color:inherit;text-decoration:none}
    Los contratos de tokens también deben verificarse en TronScan.
    Empieza en la testnet Nile antes de tocar mainnet.
    ===================================================================== */
-const ROUTER_ADDRESS = ''; // <-- PEGAR router SunSwap verificado
-const WTRX_ADDRESS   = ''; // <-- PEGAR dirección WTRX verificada
+const CFG = window.DEXCUBA;
+const ROUTER_ADDRESS = CFG.net.router;
+const WTRX_ADDRESS   = CFG.net.wtrx;
 
 // Lista de tokens (contratos TRC-20 mainnet verificados por ti).
 // 'native' marca TRX. USDT-TRC20 es el contrato ampliamente documentado;
@@ -277,19 +300,12 @@ document.querySelectorAll('#slipOpts button').forEach(b=>b.onclick=()=>{
 
 /* ---------- wallet ---------- */
 async function connectWallet(){
-  if(!window.tronLink&&!window.tronWeb){showMsg('No se detectó TronLink. Instálalo desde tronlink.org y recarga.','err');window.open('https://www.tronlink.org/','_blank');return;}
-  try{
-    if(window.tronLink&&window.tronLink.request){
-      const res=await window.tronLink.request({method:'tron_requestAccounts'});
-      if(res&&res.code&&res.code!==200){showMsg('Conexión rechazada.','err');return;}
-    }
-    tw=window.tronWeb;
-    if(!tw||!tw.defaultAddress||!tw.defaultAddress.base58){showMsg('Desbloquea TronLink y reintenta.','err');return;}
-    account=tw.defaultAddress.base58;
-    const short=account.slice(0,5)+'…'+account.slice(-4);
-    $('walletBtn').textContent=short; $('walletBtn').classList.add('on');
-    clearMsg(); refreshBalances(); onAmountIn();
-  }catch(e){showMsg('No se pudo conectar: '+(e.message||e),'err');}
+  const w=await DexWallet.connect();
+  if(!w){showMsg('No se pudo conectar. Instala o desbloquea tu wallet TRON.','err');return;}
+  tw=w.tronWeb; account=w.address;
+  $('walletBtn').textContent=account.slice(0,5)+'…'+account.slice(-4);
+  $('walletBtn').classList.add('on');
+  clearMsg(); refreshBalances(); onAmountIn();
 }
 
 async function trc20(addr){return await tw.contract().at(addr);}
@@ -369,7 +385,7 @@ async function onAction(){
       const token=await trc20(from.addr);
       await token.approve(ROUTER_ADDRESS,quote.amountIn.toString()).send();
     }
-    showMsg('Confirma el swap en TronLink…','info');
+    showMsg('Confirma el swap en tu wallet…','info');
     let tx;
     if(from.addr==='native'){
       tx=await router.swapExactETHForTokens(minOut.toString(),path,account,deadline).send({callValue:quote.amountIn.toString()});
@@ -387,7 +403,9 @@ async function onAction(){
 
 /* ---------- init ---------- */
 renderTokens();
-if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58){connectWallet();}
+DexWallet.reconnect().then(w=>{if(w)connectWallet();});
 </script>
+<script src="/cookies.js"></script>
+<script src="/pwa.js"></script>
 </body>
 </html>

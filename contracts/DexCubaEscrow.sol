@@ -19,6 +19,14 @@ pragma solidity ^0.8.6;
  *  - Si el comprador nunca marca "pagado", el vendedor puede recuperar su USDT
  *    tras un plazo de seguridad (AUTO_REFUND_DELAY), evitando fondos atrapados.
  *
+ * PROTECCIONES SIN AUDITORÍA
+ *  Al no estar auditado, el contrato incluye salvaguardas que acotan el daño
+ *  de un posible fallo:
+ *   - maxTradeAmount: importe máximo por operación (subible con el tiempo).
+ *   - paused: detiene la creación de trades nuevos ante cualquier sospecha,
+ *     SIN impedir que los existentes se liberen o reembolsen.
+ *   - El owner NO puede mover fondos: solo ajustar límite, pausa y recaudador.
+ *
  * ADVERTENCIA
  *  Este contrato NO ha sido auditado. Antes de usarlo con dinero real:
  *   1) Despliégalo y pruébalo en la testnet Nile con montos pequeños.
@@ -45,8 +53,19 @@ contract DexCubaEscrow {
     uint256 public immutable feeBps;
     /// Dirección que recibe la comisión. El owner puede actualizarla.
     address public feeCollector;
-    /// Puede cambiar únicamente la dirección que cobra la comisión.
+    /// Puede cambiar la comisión, el límite y pausar. NO puede tocar fondos.
     address public owner;
+
+    // --- Protecciones de seguridad ---
+    // El contrato no está auditado: estos límites acotan el daño de un fallo.
+
+    /// Importe máximo por operación (en unidades del token). 0 = sin límite.
+    uint256 public maxTradeAmount;
+    /// Si está pausado no se crean trades nuevos. Los existentes SIEMPRE pueden
+    /// liberarse o reembolsarse: pausar nunca puede atrapar fondos de nadie.
+    bool public paused;
+    /// Total actualmente bloqueado en el contrato (para seguimiento).
+    uint256 public totalLocked;
 
     enum State { NONE, FUNDED, PAID, RELEASED, REFUNDED }
 
@@ -76,23 +95,45 @@ contract DexCubaEscrow {
     event Released(uint256 indexed id, address to, uint256 amountToBuyer, uint256 fee);
     event Refunded(uint256 indexed id, address to);
     event FeeCollectorChanged(address indexed newCollector);
+    event MaxTradeAmountChanged(uint256 newMax);
+    event PausedChanged(bool paused);
 
-    constructor(address _token, address _feeCollector, uint256 _feeBps) {
+    constructor(address _token, address _feeCollector, uint256 _feeBps, uint256 _maxTradeAmount) {
         require(_token != address(0), "token=0");
         require(_feeCollector != address(0), "feeCollector=0");
         require(_feeBps <= 100, "fee>1%"); // tope duro de seguridad
         token = _token;
         feeCollector = _feeCollector;
         feeBps = _feeBps;
+        maxTradeAmount = _maxTradeAmount;
         owner = msg.sender;
     }
 
-    /// Cambia la dirección que cobra la comisión. Solo el owner.
-    function setFeeCollector(address a) external {
+    modifier onlyOwner() {
         require(msg.sender == owner, "only owner");
+        _;
+    }
+
+    /// Cambia la dirección que cobra la comisión.
+    function setFeeCollector(address a) external onlyOwner {
         require(a != address(0), "zero");
         feeCollector = a;
         emit FeeCollectorChanged(a);
+    }
+
+    /// Ajusta el importe máximo por operación. Se puede subir a medida que el
+    /// contrato acumule historial sin incidentes. 0 = sin límite.
+    function setMaxTradeAmount(uint256 v) external onlyOwner {
+        maxTradeAmount = v;
+        emit MaxTradeAmountChanged(v);
+    }
+
+    /// Detiene la creación de trades nuevos ante cualquier sospecha.
+    /// IMPORTANTE: no afecta a los trades ya existentes — siempre se pueden
+    /// liberar o reembolsar. Pausar nunca puede atrapar los fondos de nadie.
+    function setPaused(bool v) external onlyOwner {
+        paused = v;
+        emit PausedChanged(v);
     }
 
     /**
@@ -104,9 +145,11 @@ contract DexCubaEscrow {
         nonReentrant
         returns (uint256 id)
     {
+        require(!paused, "paused");
         require(buyer != address(0) && arbitrator != address(0), "bad addr");
         require(amount > 0, "amount=0");
         require(buyer != msg.sender, "buyer==seller");
+        require(maxTradeAmount == 0 || amount <= maxTradeAmount, "amount>max");
 
         id = nextId++;
         trades[id] = Trade({
@@ -118,8 +161,9 @@ contract DexCubaEscrow {
             state: State.FUNDED
         });
 
-        _pull(msg.sender, amount);
+        totalLocked += amount;
         emit Created(id, msg.sender, buyer, arbitrator, amount);
+        _pull(msg.sender, amount);
     }
 
     /// El COMPRADOR señala que ya envió el CUP. Bloquea el auto-reembolso.
@@ -142,12 +186,13 @@ contract DexCubaEscrow {
         require(t.state == State.FUNDED || t.state == State.PAID, "bad state");
         require(msg.sender == t.seller || msg.sender == t.arbitrator, "not allowed");
         t.state = State.RELEASED;
+        totalLocked -= t.amount;
 
         uint256 fee = (t.amount * feeBps) / 10000;
         uint256 toBuyer = t.amount - fee;
+        emit Released(id, t.buyer, toBuyer, fee);
         _push(t.buyer, toBuyer);
         if (fee > 0) _push(feeCollector, fee);
-        emit Released(id, t.buyer, toBuyer, fee);
     }
 
     /**
@@ -163,6 +208,8 @@ contract DexCubaEscrow {
         if (msg.sender == t.arbitrator) {
             // permitido siempre
         } else if (msg.sender == t.seller) {
+            // Nota sobre block.timestamp: un validador solo puede desviarlo unos
+            // segundos, irrelevante frente a un plazo de 3 días. Uso seguro aquí.
             require(t.state == State.FUNDED, "buyer marked paid");
             require(block.timestamp >= t.fundedAt + AUTO_REFUND_DELAY, "too early");
         } else {
@@ -170,8 +217,9 @@ contract DexCubaEscrow {
         }
 
         t.state = State.REFUNDED;
-        _push(t.seller, t.amount);
+        totalLocked -= t.amount;
         emit Refunded(id, t.seller);
+        _push(t.seller, t.amount);
     }
 
     /// Lectura cómoda del estado de un trade.
@@ -184,7 +232,11 @@ contract DexCubaEscrow {
         return (t.seller, t.buyer, t.arbitrator, t.amount, t.fundedAt, t.state);
     }
 
-    // --- transferencias seguras (compatibles con tokens que no devuelven bool) ---
+    // --- transferencias seguras ---
+    // Se usa .call() a propósito: USDT-TRC20 no devuelve bool en transfer /
+    // transferFrom (se aparta del estándar). Con una interfaz tipada la llamada
+    // revertiría siempre. Aquí se comprueba el éxito y, si hay datos de retorno,
+    // que sean 'true'. Es el patrón recomendado para tokens no estándar.
 
     function _pull(address from, uint256 amount) private {
         (bool ok, bytes memory data) =

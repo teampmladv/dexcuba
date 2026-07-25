@@ -1,0 +1,54 @@
+{
+  "name": "DexCuba — Mercado P2P y escrow",
+  "short_name": "DexCuba",
+  "description": "Compra y vende USDT por CUP con protección de escrow. Sin custodia: tus fondos son siempre tuyos.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0A1018",
+  "theme_color": "#0A1018",
+  "lang": "es",
+  "dir": "ltr",
+  "categories": ["finance", "business"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mercado P2P",
+      "short_name": "P2P",
+      "description": "Ver ofertas de compra y venta",
+      "url": "/p2p.html"
+    },
+    {
+      "name": "Escrow",
+      "short_name": "Escrow",
+      "description": "Operar con protección",
+      "url": "/escrow.html"
+    },
+    {
+      "name": "Mi cuenta",
+      "short_name": "Cuenta",
+      "description": "Perfil y reputación",
+      "url": "/cuenta.html"
+    }
+  ]
+}

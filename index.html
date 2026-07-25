@@ -26,8 +26,10 @@ a{color:inherit;text-decoration:none}
 
 /* ---------- Topbar ---------- */
 .topbar{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,16,24,.92);backdrop-filter:blur(8px);z-index:50}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.02em}
-.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#E23A52,var(--flag-red));display:grid;place-items:center;color:#fff;font-size:14px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.02em;transition:opacity .15s}
+.logo-mark{width:30px;height:30px;flex:none;display:block}
+.logo-mark svg{width:100%;height:100%;display:block}
+.logo:hover{opacity:.82}
 .logo .cu{color:var(--accent)}
 .topnav{display:flex;gap:4px;margin-left:8px}
 .topnav button{padding:8px 14px;border-radius:8px;color:var(--muted);font-size:14px;font-weight:500}
@@ -60,6 +62,24 @@ a{color:inherit;text-decoration:none}
 .balance-sub{font-family:var(--mono);color:var(--muted);font-size:13px;margin-top:2px}
 .balance-chg{display:inline-block;margin-top:10px;font-size:13px;color:var(--up);background:rgba(46,189,133,.1);border:1px solid rgba(46,189,133,.25);padding:3px 10px;border-radius:999px}
 .actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.connect-btn{padding:9px 16px;border-radius:10px;font-weight:700;font-size:13px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C;transition:filter .12s}
+.connect-btn:hover{filter:brightness(1.08)}
+.connect-btn.on{background:var(--panel2);border:1px solid var(--accent);color:var(--accent);font-weight:600}
+.wallet-line{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:10px;display:flex;align-items:center;gap:7px;word-break:break-all}
+.wl-dot{width:7px;height:7px;border-radius:50%;background:var(--up);flex:none}
+.assets-empty{text-align:center;padding:36px 16px;color:var(--muted);font-size:13.5px;line-height:1.6}
+.assets-empty .ic{font-size:30px;display:block;margin-bottom:10px;opacity:.7}
+.tx-empty{text-align:center;color:var(--muted);font-size:12.5px;padding:18px 8px}
+.quick{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid rgba(36,50,71,.5);transition:opacity .12s}
+.quick:last-child{border-bottom:none}
+.quick:hover{opacity:.75}
+.q-ic{width:36px;height:36px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-size:16px;flex:none}
+.q-tx{flex:1;min-width:0}
+.q-tx b{display:block;font-size:13.5px;font-weight:600}
+.q-tx span{font-size:11.5px;color:var(--muted);line-height:1.4;display:block}
+.net-badge{font-size:10.5px;font-weight:700;background:var(--warn);color:#2A1E00;padding:3px 8px;border-radius:6px;letter-spacing:.04em}
+.net-badge.mainnet{background:var(--up);color:#04231A}
+.net-badge.wrong{background:var(--down);color:#fff}
 .btn{padding:11px 20px;border-radius:10px;font-weight:600;font-size:14px;transition:transform .12s ease,filter .12s ease}
 .btn:active{transform:scale(.97)}
 .btn-accent{background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C}
@@ -156,20 +176,36 @@ tbody tr:hover{background:rgba(31,199,182,.04)}
 /* ---------- Footer ---------- */
 .foot{max-width:1240px;margin:0 auto;padding:10px 24px 30px;color:var(--muted);font-size:12px;text-align:center}
 </style>
+<meta property="og:title" content="DexCuba">
+<meta property="og:description" content="Mercado P2P de USDT por CUP con escrow. Sin custodia.">
+<meta property="og:image" content="/icon-512.png">
+<meta property="og:url" content="https://dexcuba.com">
+<meta property="og:type" content="website">
+<meta name="application-name" content="DexCuba">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0A1018">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DexCuba">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/mobile.css">
 </head>
 <body>
 
 <header class="topbar">
-  <div class="logo"><span class="logo-mark">★</span>Dex<span class="cu">Cuba</span></div>
+  <a class="logo" href="/" aria-label="DexCuba — ir al inicio"><span class="logo-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><rect x="0" y="0" width="120" height="120" rx="26" fill="#D3273E"/><circle cx="60" cy="60" r="42" fill="none" stroke="#fff" stroke-width="4" opacity=".35"/><path d="M60 24 L70 50 L98 50 L75 66 L84 93 L60 76 L36 93 L45 66 L22 50 L50 50 Z" fill="#fff"/><circle cx="60" cy="60" r="9" fill="#1FC7B6"/></svg></span>Dex<span class="cu">Cuba</span> <span class="net-badge" id="netBadge"></span></a>
   <nav class="topnav" aria-label="Navegación principal">
     <button class="active">Panel</button>
-    <button onclick="location.href='/swap.html'">Swap</button>
-    <button onclick="location.href='/p2p.html'">Mercado P2P</button>
-    <button onclick="location.href='/escrow.html'">Escrow</button>
+    <button onclick="location.href='/convertir.html'" data-short="Convertir">Convertir</button>
+    <button onclick="location.href='/cobrar.html'" data-short="Cobrar">Cobrar</button>
+    <button onclick="location.href='/p2p.html'" data-short="P2P">Mercado P2P</button>
+    <button onclick="location.href='/escrow.html'" data-short="Escrow">Escrow</button>
+    <button onclick="location.href='/cuenta.html'" data-short="Cuenta">Mi cuenta</button>
   </nav>
   <div class="topbar-right">
     <span class="pill">USD · CU</span>
-    <div class="avatar" title="Tu cuenta">DX</div>
+    <button class="connect-btn" id="connectBtn" onclick="connectWallet()">Conectar wallet</button>
   </div>
 </header>
 
@@ -180,25 +216,29 @@ tbody tr:hover{background:rgba(31,199,182,.04)}
   <section>
     <div class="balance-card">
       <div class="balance-label">
-        Balance total estimado
+        <span id="balTitle">Saldo de tu wallet</span>
         <button class="eye-btn" id="eyeBtn" onclick="toggleBalance()" aria-label="Mostrar u ocultar balance">👁</button>
       </div>
-      <div class="balance-value" id="balMain">$0.00</div>
-      <div class="balance-sub" id="balSub">≈ — CUP · tasa informal (demo)</div>
-      <div class="balance-chg">▲ +$41.20 (0.36%) hoy</div>
+      <div class="balance-value" id="balMain">—</div>
+      <div class="balance-sub" id="balSub">Conecta tu wallet para ver tu saldo real</div>
+      <div class="wallet-line" id="walletLine"></div>
       <div class="actions">
-        <button class="btn btn-accent" onclick="openModal('depModal')">Depositar</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('sendPanel').scrollIntoView({behavior:'smooth'});document.getElementById('sendAddr').focus()">Enviar</button>
-        <button class="btn btn-ghost" onclick="openModal('recModal')">Recibir</button>
-        <button class="btn btn-ghost" onclick="toast('Recarga móvil — demo')">Recarga móvil</button>
+        <button class="btn btn-accent" onclick="location.href='/p2p.html?side=vendo'">Comprar USDT</button>
+        <button class="btn btn-ghost" onclick="location.href='/p2p.html?side=compro'">Vender USDT</button>
+        <button class="btn btn-ghost" onclick="openReceive()">Recibir</button>
+        <button class="btn btn-ghost" onclick="location.href='/escrow.html'">Mis operaciones</button>
       </div>
     </div>
 
     <div class="panel">
       <h2>Mis activos <span class="hint" id="assetCount"></span></h2>
-      <input class="asset-search" id="assetSearch" type="search" placeholder="Buscar activo…" oninput="filterAssets(this.value)">
-      <table aria-label="Lista de activos">
-        <thead><tr><th>Activo</th><th>Cantidad</th><th>Precio</th><th>24 h</th><th>7 días</th><th></th></tr></thead>
+      <div id="assetsEmpty" class="assets-empty">
+        <span class="ic">🔗</span>
+        Conecta tu wallet para ver tus activos reales en la red TRON.
+        <button class="btn btn-accent" style="max-width:220px;margin:14px auto 0" onclick="connectWallet()">Conectar wallet</button>
+      </div>
+      <table aria-label="Lista de activos" id="assetTable" style="display:none">
+        <thead><tr><th>Activo</th><th>Cantidad</th><th>Precio</th><th>24 h</th><th>Valor</th><th></th></tr></thead>
         <tbody id="assetBody"></tbody>
       </table>
     </div>
@@ -211,44 +251,46 @@ tbody tr:hover{background:rgba(31,199,182,.04)}
       <div id="ratesBody"><div class="rates-empty" id="ratesEmpty">Cargando tasas…</div></div>
       <div class="rates-foot" id="ratesFoot"></div>
     </div>
-    <div class="panel" id="sendPanel">
-      <h2>Envío rápido</h2>
-      <div class="field">
-        <label for="sendAsset">Activo</label>
-        <select id="sendAsset"></select>
-      </div>
-      <div class="field">
-        <label for="sendAddr">Dirección o usuario de destino</label>
-        <input id="sendAddr" class="mono" placeholder="T… / 0x… / @usuario" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="sendAmt">Importe</label>
-        <div class="amount-row">
-          <input id="sendAmt" class="mono" inputmode="decimal" placeholder="0.00">
-          <button class="max-btn" onclick="setMax()">MÁX</button>
-        </div>
-      </div>
-      <div class="fee-line"><span>Comisión de red (est.)</span><span class="num" id="feeEst">—</span></div>
-      <div class="fee-line"><span>Llegada estimada</span><span class="num">&lt; 1 min</span></div>
-      <button class="btn btn-accent send-btn" onclick="sendPayment()">Confirmar envío</button>
+    <div class="panel">
+      <h2>Qué puedes hacer aquí</h2>
+      <a class="quick" href="/p2p.html">
+        <span class="q-ic">🤝</span>
+        <span class="q-tx"><b>Mercado P2P</b><span>Compra y vende USDT por CUP con otras personas</span></span>
+      </a>
+      <a class="quick" href="/escrow.html">
+        <span class="q-ic">🔒</span>
+        <span class="q-tx"><b>Escrow protegido</b><span>Opera sin riesgo: el USDT queda bloqueado en el contrato</span></span>
+      </a>
+      <a class="quick" href="/cuenta.html">
+        <span class="q-ic">⭐</span>
+        <span class="q-tx"><b>Mi cuenta</b><span>Tu reputación, valoraciones y suscripción VIP</span></span>
+      </a>
+      <a class="quick" href="/cobrar.html">
+        <span class="q-ic">🧾</span>
+        <span class="q-tx"><b>Cobrar</b><span>Enlaces de cobro y modo mostrador (POS): pago directo a tu wallet</span></span>
+      </a>
+      <a class="quick" href="/convertir.html">
+        <span class="q-ic">🔄</span>
+        <span class="q-tx"><b>Convertir</b><span>USDT ⇄ BNB al precio de mercado, comisión 0,5%</span></span>
+      </a>
     </div>
 
     <div class="panel">
-      <h2>Actividad reciente <span class="hint">últimos 7 días</span></h2>
+      <h2>Actividad reciente <span class="hint" id="txHint">conecta tu wallet</span></h2>
       <div id="txList"></div>
     </div>
   </aside>
 </main>
 
-<footer class="foot">DexCuba · Demo de interfaz — los datos son simulados y no representan fondos reales.<br>Tasa del peso cubano (CUP): mercado informal, fuente <a href="https://eltoque.com/tasas-de-cambio-cuba" target="_blank" rel="noopener" style="color:var(--accent)">elTOQUE</a> · valor solo de referencia.</footer>
+<footer class="foot">DexCuba · plataforma no-custodial: nunca guardamos tus fondos ni tus claves.<br>Tasa del peso cubano (CUP): mercado informal, fuente <a href="https://eltoque.com/tasas-de-cambio-cuba" target="_blank" rel="noopener" style="color:var(--accent)">elTOQUE</a> · valor solo de referencia.<br><a href="/legal.html#terminos" style="color:var(--muted);text-decoration:underline">Términos</a> · <a href="/legal.html#privacidad" style="color:var(--muted);text-decoration:underline">Privacidad</a> · <a href="/legal.html#cookies" style="color:var(--muted);text-decoration:underline">Cookies</a> · <a href="/legal.html#riesgos" style="color:var(--muted);text-decoration:underline">Riesgos</a></footer>
 
 <!-- ==== Modal Recibir ==== -->
 <div class="overlay" id="recModal" role="dialog" aria-modal="true" aria-label="Recibir fondos">
   <div class="modal modal-wrap">
     <button class="modal-close" onclick="closeModal('recModal')" aria-label="Cerrar">✕</button>
     <h3>Recibir fondos</h3>
-    <p class="sub">Comparte esta dirección para recibir USDT por la red TRC-20 (simulada).</p>
-    <div class="qr-box" id="qrBox"></div>
+    <p class="sub">Comparte esta dirección para recibir USDT por la red TRC-20. Es tu propia wallet: DexCuba no interviene.<br><a href="/cobrar.html" style="color:var(--accent);font-size:12.5px">¿Quieres pedir una cantidad exacta? Crea un enlace de cobro →</a></p>
+    <div class="qr-box" id="qrBox" style="background:#fff;border-radius:12px;padding:12px;display:inline-block"></div>
     <div class="addr-row">
       <code id="myAddr">TQd7xE93mKp2vBnA5cRzY8uHtL4sWfG1jD</code>
       <button class="copy-btn" onclick="copyAddr()">Copiar</button>
@@ -256,244 +298,241 @@ tbody tr:hover{background:rgba(31,199,182,.04)}
   </div>
 </div>
 
-<!-- ==== Modal Depositar ==== -->
-<div class="overlay" id="depModal" role="dialog" aria-modal="true" aria-label="Depositar">
-  <div class="modal modal-wrap">
-    <button class="modal-close" onclick="closeModal('depModal')" aria-label="Cerrar">✕</button>
-    <h3>Depositar</h3>
-    <p class="sub">Elige cómo quieres añadir fondos a tu wallet.</p>
-    <div class="actions" style="margin-top:4px;flex-direction:column">
-      <button class="btn btn-ghost" style="width:100%" onclick="closeModal('depModal');openModal('recModal')">🔗&nbsp; Depósito cripto (USDT TRC-20)</button>
-      <button class="btn btn-ghost" style="width:100%" onclick="closeModal('depModal');toast('Remesa desde el exterior — demo')">✈️&nbsp; Remesa desde el exterior</button>
-      <button class="btn btn-ghost" style="width:100%" onclick="closeModal('depModal');toast('Tarjeta internacional — demo')">💳&nbsp; Tarjeta internacional</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/config.js"></script>
+<script src="/wallet.js"></script>
 <script>
-/* ================= Datos base (fallback si la API no responde) ================= */
-const ASSETS=[
- {sym:'USDT',name:'Tether · TRC-20', id:'tether',       qty:1850.00, price:1.00,    chg:0.01,  color:'#26A17B'},
- {sym:'BTC', name:'Bitcoin',         id:'bitcoin',      qty:0.08420, price:59640.20,chg:1.84,  color:'#F7931A'},
- {sym:'TRX', name:'Tron',            id:'tron',         qty:12500.0, price:0.128,   chg:2.10,  color:'#EF0027'},
- {sym:'ETH', name:'Ethereum',        id:'ethereum',     qty:0.6200,  price:3120.55, chg:-0.72, color:'#7C8CF8'},
- {sym:'USDC',name:'USD Coin',        id:'usd-coin',     qty:640.00,  price:1.00,    chg:0.00,  color:'#2775CA'},
- {sym:'LTC', name:'Litecoin',        id:'litecoin',     qty:4.80,    price:78.40,   chg:-1.12, color:'#5B6C87'},
+const CFG=window.DEXCUBA;
+const $=id=>document.getElementById(id);
+let tw=null, account=null, balanceVisible=true;
+let CUP_RATE=null, CUP_SOURCE='referencia';
+let holdings=[];   // activos reales de la wallet
+let prices={};     // precios de mercado
+
+/* Tokens que mostramos del usuario (TRC-20 en la red activa) */
+const TOKENS=[
+  {sym:'USDT', name:'Tether TRC-20', id:'tether',  addr:CFG.net.usdt, dec:6, color:'#26A17B'},
+  {sym:'TRX',  name:'TRON',          id:'tron',    addr:'native',     dec:6, color:'#EF0027'},
 ];
-let CUP_RATE=380;          // tasa informal de referencia (fallback; se actualiza desde elTOQUE)
-let CUP_SOURCE='referencia';// etiqueta que se muestra junto a la conversión
-let TXS=[
- {t:'in', title:'Remesa recibida',   from:'@familia.miami',        amt:'+200.00 USDT', when:'Hoy · 09:12'},
- {t:'out',title:'Pago en comercio',  from:'Cafetería El Malecón',  amt:'−4.50 USDT',   when:'Ayer · 18:47'},
- {t:'out',title:'Recarga móvil',     from:'Cubacel · +53 5•• ••34',amt:'−12.00 USDT',  when:'18 jul · 11:03'},
- {t:'dep',title:'Depósito TRC-20',   from:'TQd7…G1jD',             amt:'+500.00 USDT', when:'16 jul · 08:21'},
- {t:'in', title:'Pago recibido',     from:'@yoel.hab',             amt:'+35.00 USDT',  when:'15 jul · 20:40'},
-];
-const fmtUSD=n=>n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-let balanceVisible=true;
 
-/* ================= Ticker ================= */
-function renderTicker(){
-  const items=ASSETS.map(a=>{
-    const cls=a.chg>=0?'up':'down', sign=a.chg>=0?'+':'';
-    return `<span class="tick"><span class="sym">${a.sym}/USD</span><span>$${fmtUSD(a.price)}</span><span class="chg ${cls}">${sign}${a.chg.toFixed(2)}%</span></span>`;
-  }).join('');
-  const cup=`<span class="tick"><span class="sym">USD/CUP</span><span>${Math.round(CUP_RATE)}</span><span class="chg up">${CUP_SOURCE}</span></span>`;
-  document.getElementById('tickerTrack').innerHTML=(items+cup).repeat(4);
+const fmtUSD=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtQty=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:6});
+
+/* ================= Wallet ================= */
+async function connectWallet(){
+  const w=await DexWallet.connect();
+  if(!w){toast('No se pudo conectar. Instala o desbloquea tu wallet TRON.');return;}
+  tw=w.tronWeb; account=w.address;
+  const btn=$('connectBtn');
+  if(btn){btn.textContent=account.slice(0,5)+'…'+account.slice(-4);btn.classList.add('on');btn.title=w.name;}
+  $('walletLine').innerHTML='<span class="wl-dot"></span>'+account;
+  CFG.paintNetworkUI(tw);
+  loadHoldings();
 }
 
-/* ================= Sparklines ================= */
-function spark(chg,color){
-  let pts=[],v=14;
-  for(let i=0;i<=20;i++){v+=(Math.random()-0.5+chg/40)*3;v=Math.max(3,Math.min(25,v));pts.push(`${i*4.4},${28-v}`);}
-  return `<svg class="spark" viewBox="0 0 88 28" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+async function readBalanceOf(t){
+  if(t.addr==='native'){const b=await tw.trx.getBalance(account);return Number(b)/1e6;}
+  if(!t.addr)return 0;
+  const r=await tw.transactionBuilder.triggerConstantContract(
+    tw.address.toHex(t.addr),'balanceOf(address)',{},[{type:'address',value:account}]);
+  return Number(BigInt('0x'+r.constant_result[0]))/10**t.dec;
 }
 
-/* ================= Tabla de activos ================= */
-function renderAssets(filter=''){
-  const body=document.getElementById('assetBody');
-  const f=filter.trim().toLowerCase();
-  const rows=ASSETS.filter(a=>!f||a.name.toLowerCase().includes(f)||a.sym.toLowerCase().includes(f));
-  document.getElementById('assetCount').textContent=rows.length+' activos';
-  body.innerHTML=rows.map(a=>{
-    const cls=a.chg>=0?'up':'down', sign=a.chg>=0?'+':'';
-    const val=a.qty*a.price;
-    return `<tr>
-      <td><div class="coin"><div class="coin-ic" style="background:${a.color}">${a.sym[0]}</div><div><b>${a.sym}</b><span>${a.name}</span></div></div></td>
-      <td><span class="num">${a.qty.toLocaleString('en-US',{maximumFractionDigits:5})}</span><br><span class="num" style="color:var(--muted);font-size:11.5px">$${fmtUSD(val)}</span></td>
-      <td class="num">$${fmtUSD(a.price)}</td>
-      <td class="chg ${cls}">${sign}${a.chg.toFixed(2)}%</td>
-      <td>${spark(a.chg,a.chg>=0?'#2EBD85':'#F6465D')}</td>
-      <td style="text-align:right"><button class="mini-btn" onclick="toast('Operar ${a.sym} — demo')">Operar</button></td>
-    </tr>`;
-  }).join('');
-}
-function filterAssets(v){renderAssets(v)}
-
-/* ================= Historial ================= */
-function renderTxs(){
-  const ic={in:'↓',out:'↑',dep:'＋'};
-  document.getElementById('txList').innerHTML=TXS.map(t=>`
-    <div class="tx">
-      <div class="tx-ic ${t.t}">${ic[t.t]}</div>
-      <div class="tx-info"><b>${t.title}</b><span>${t.from}</span></div>
-      <div class="tx-amt">${t.amt}<small>${t.when}</small></div>
-    </div>`).join('');
+async function loadHoldings(){
+  if(!account)return;
+  try{
+    holdings=[];
+    for(const t of TOKENS){
+      let qty=0;
+      try{ qty=await readBalanceOf(t); }catch(e){}
+      holdings.push({...t, qty});
+    }
+    renderAssets(); updateBalance(); loadTxs();
+  }catch(e){}
 }
 
-/* ================= Envío ================= */
-function renderSendSelect(){
-  const sel=document.getElementById('sendAsset');
-  sel.innerHTML=ASSETS.map(a=>`<option value="${a.sym}">${a.sym} — disponible ${a.qty.toLocaleString('en-US',{maximumFractionDigits:5})}</option>`).join('');
+/* ================= Precios ================= */
+async function loadPrices(){
+  try{
+    const r=await fetch('/api/prices');
+    if(!r.ok)return;
+    prices=await r.json();
+    renderTicker(); renderAssets(); updateBalance();
+  }catch(e){}
 }
-document.getElementById('sendAmt').addEventListener('input',e=>{
-  const v=parseFloat(e.target.value.replace(',','.'));
-  const sym=document.getElementById('sendAsset').value;
-  const flat=sym==='USDT'||sym==='TRX'?1.0:0.5;
-  document.getElementById('feeEst').textContent=isNaN(v)||v<=0?'—':'$'+fmtUSD(Math.max(flat,v*0.001));
-});
-function setMax(){
-  const sym=document.getElementById('sendAsset').value;
-  const a=ASSETS.find(x=>x.sym===sym);
-  document.getElementById('sendAmt').value=String(a.qty);
-  document.getElementById('sendAmt').dispatchEvent(new Event('input'));
+function priceOf(id){
+  if(id==='tether')return 1;
+  const p=prices[id];
+  return p&&typeof p.usd==='number'?p.usd:null;
 }
-function sendPayment(){
-  const addr=document.getElementById('sendAddr').value.trim();
-  const amtStr=document.getElementById('sendAmt').value.trim();
-  const amt=parseFloat(amtStr.replace(',','.'));
-  const sym=document.getElementById('sendAsset').value;
-  const a=ASSETS.find(x=>x.sym===sym);
-  if(!addr){toast('Introduce una dirección de destino');document.getElementById('sendAddr').focus();return}
-  if(isNaN(amt)||amt<=0){toast('Introduce un importe válido');document.getElementById('sendAmt').focus();return}
-  if(amt>a.qty){toast('Saldo insuficiente de '+sym);return}
-  a.qty=Math.round((a.qty-amt)*1e6)/1e6;
-  TXS.unshift({t:'out',title:'Envío',from:addr.length>16?addr.slice(0,6)+'…'+addr.slice(-4):addr,amt:'−'+amtStr+' '+sym,when:'Ahora mismo'});
-  document.getElementById('sendAddr').value='';document.getElementById('sendAmt').value='';
-  document.getElementById('feeEst').textContent='—';
-  renderAssets(document.getElementById('assetSearch').value);renderTxs();renderSendSelect();updateBalance();
-  toast('✓ Envío de '+amtStr+' '+sym+' completado (demo)');
+function changeOf(id){
+  const p=prices[id];
+  return p&&typeof p.usd_24h_change==='number'?p.usd_24h_change:null;
 }
 
 /* ================= Balance ================= */
+function totalUSD(){
+  return holdings.reduce((s,h)=>{const p=priceOf(h.id);return s+(p?h.qty*p:0);},0);
+}
 function updateBalance(){
-  const total=ASSETS.reduce((s,a)=>s+a.qty*a.price,0);
-  const cup=total*CUP_RATE;
+  if(!account){
+    $('balMain').textContent='—';
+    $('balSub').textContent='Conecta tu wallet para ver tu saldo real';
+    return;
+  }
+  const total=totalUSD();
   if(balanceVisible){
-    document.getElementById('balMain').textContent='$'+fmtUSD(total);
-    const cupStr=cup>=1e6?(cup/1e6).toLocaleString('en-US',{maximumFractionDigits:2})+' M':Math.round(cup).toLocaleString('en-US');
-    document.getElementById('balSub').textContent='≈ '+cupStr+' CUP · '+CUP_SOURCE;
+    $('balMain').textContent='$'+fmtUSD(total);
+    if(CUP_RATE){
+      const cup=total*CUP_RATE;
+      const cupStr=cup>=1e6?(cup/1e6).toLocaleString('es-ES',{maximumFractionDigits:2})+' M':Math.round(cup).toLocaleString('es-ES');
+      $('balSub').textContent='≈ '+cupStr+' CUP · '+CUP_SOURCE;
+    }else $('balSub').textContent='en tu wallet · no custodiado por DexCuba';
   }else{
-    document.getElementById('balMain').textContent='$ ••••••';
-    document.getElementById('balSub').textContent='≈ •••• CUP';
+    $('balMain').textContent='$ ••••••';
+    $('balSub').textContent='≈ •••• CUP';
   }
 }
 function toggleBalance(){balanceVisible=!balanceVisible;updateBalance();}
 
-/* ================= Precios en vivo vía Pages Function (/api/prices) ================= */
-async function loadLivePrices(){
+/* ================= Activos ================= */
+function renderAssets(){
+  const tbl=$('assetTable'), empty=$('assetsEmpty'), body=$('assetBody');
+  if(!account){tbl.style.display='none';empty.style.display='block';$('assetCount').textContent='';return;}
+  empty.style.display='none';tbl.style.display='table';
+  $('assetCount').textContent=holdings.length+' activos';
+  body.innerHTML=holdings.map(h=>{
+    const p=priceOf(h.id), chg=changeOf(h.id);
+    const val=p?h.qty*p:null;
+    const cls=chg==null?'':(chg>=0?'up':'down');
+    const sign=chg!=null&&chg>=0?'+':'';
+    return `<tr>
+      <td><div class="coin"><div class="coin-ic" style="background:${h.color}">${h.sym[0]}</div><div><b>${h.sym}</b><span>${h.name}</span></div></div></td>
+      <td class="num">${fmtQty(h.qty)}</td>
+      <td class="num">${p?'$'+fmtUSD(p):'—'}</td>
+      <td class="chg ${cls}">${chg!=null?sign+chg.toFixed(2)+'%':'—'}</td>
+      <td class="num">${val!=null?'$'+fmtUSD(val):'—'}</td>
+      <td style="text-align:right"><button class="mini-btn" onclick="location.href='/p2p.html'">Operar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ================= Ticker ================= */
+function renderTicker(){
+  const ids=[['BTC','bitcoin'],['ETH','ethereum'],['TRX','tron'],['USDT','tether']];
+  let items=ids.map(([sym,id])=>{
+    const p=priceOf(id), c=changeOf(id);
+    if(p==null)return '';
+    const cls=c!=null&&c>=0?'up':'down', sign=c!=null&&c>=0?'+':'';
+    return `<span class="tick"><span class="sym">${sym}/USD</span><span>$${fmtUSD(p)}</span><span class="chg ${cls}">${c!=null?sign+c.toFixed(2)+'%':''}</span></span>`;
+  }).join('');
+  if(CUP_RATE)items+=`<span class="tick"><span class="sym">USD/CUP</span><span>${Math.round(CUP_RATE)}</span><span class="chg up">${CUP_SOURCE}</span></span>`;
+  if(items)$('tickerTrack').innerHTML=(items).repeat(4);
+}
+
+/* ================= Historial on-chain ================= */
+async function loadTxs(){
+  if(!account){return;}
+  const el=$('txList'), hint=$('txHint');
   try{
-    const r=await fetch('/api/prices',{headers:{'accept':'application/json'}});
-    if(!r.ok)return;
-    const data=await r.json();
-    let updated=false;
-    for(const a of ASSETS){
-      const p=data[a.id];
-      if(p&&typeof p.usd==='number'){
-        a.price=p.usd;
-        if(typeof p.usd_24h_change==='number')a.chg=p.usd_24h_change;
-        updated=true;
-      }
-    }
-    if(updated){
-      renderTicker();renderAssets(document.getElementById('assetSearch').value);updateBalance();
-      toast('Precios actualizados en vivo');
-    }
-  }catch(e){/* sin conexión a la API: se mantienen los datos demo */}
-}
-
-/* ================= QR simulado ================= */
-(function(){
-  const size=21,cell=7;let rects='';
-  const seed=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))|0;return()=>((h=Math.imul(h,48271)%2147483647)&0xffff)/0xffff};
-  const rnd=seed(document.getElementById('myAddr').textContent);
-  const finder=(x,y)=>`<rect x="${x*cell}" y="${y*cell}" width="${7*cell}" height="${7*cell}" fill="#000"/><rect x="${(x+1)*cell}" y="${(y+1)*cell}" width="${5*cell}" height="${5*cell}" fill="#fff"/><rect x="${(x+2)*cell}" y="${(y+2)*cell}" width="${3*cell}" height="${3*cell}" fill="#000"/>`;
-  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
-    const inF=(x<8&&y<8)||(x>size-9&&y<8)||(x<8&&y>size-9);
-    if(!inF&&rnd()>0.52)rects+=`<rect x="${x*cell}" y="${y*cell}" width="${cell}" height="${cell}" fill="#000"/>`;
+    const host=CFG.net.host;
+    const r=await fetch(`https://${host}/v1/accounts/${account}/transactions/trc20?limit=8`);
+    const d=await r.json();
+    const list=(d&&d.data)||[];
+    hint.textContent=list.length?'últimas '+list.length:'sin movimientos';
+    if(!list.length){el.innerHTML='<div class="tx-empty">Sin movimientos recientes en esta wallet.</div>';return;}
+    el.innerHTML=list.map(t=>{
+      const inc=t.to===account;
+      const dec=(t.token_info&&t.token_info.decimals)||6;
+      const sym=(t.token_info&&t.token_info.symbol)||'TOKEN';
+      const amt=Number(t.value)/10**dec;
+      const other=inc?t.from:t.to;
+      return `<div class="tx">
+        <div class="tx-ic ${inc?'in':'out'}">${inc?'↓':'↑'}</div>
+        <div class="tx-info"><b>${inc?'Recibido':'Enviado'}</b><span>${other.slice(0,6)}…${other.slice(-4)}</span></div>
+        <div class="tx-amt">${inc?'+':'−'}${fmtQty(amt)} ${sym}<small>${new Date(t.block_timestamp).toLocaleDateString('es-ES')}</small></div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    hint.textContent='';
+    el.innerHTML='<div class="tx-empty">No se pudo cargar el historial.</div>';
   }
-  document.getElementById('qrBox').innerHTML=`<svg width="147" height="147" viewBox="0 0 ${size*cell} ${size*cell}" role="img" aria-label="Código QR de la dirección">${rects}${finder(0,0)}${finder(size-7,0)}${finder(0,size-7)}</svg>`;
-})();
-
-/* ================= Utilidades ================= */
-function openModal(id){document.getElementById(id).classList.add('open')}
-function closeModal(id){document.getElementById(id).classList.remove('open')}
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'))});
-function copyAddr(){
-  const t=document.getElementById('myAddr').textContent;
-  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Dirección copiada')).catch(()=>toast('No se pudo copiar automáticamente'));
-}
-let toastTimer;
-function toast(msg){
-  const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
-  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2600);
 }
 
-/* ================= Tasa CUP en vivo vía elTOQUE (/api/cup) ================= */
-const RATE_META={
-  USD:{n:'Dólar estadounidense',b:'$'}, EUR:{n:'Euro',b:'€'}, MLC:{n:'Moneda libremente convertible',b:'M'},
-  USDT:{n:'Tether',b:'₮'}, BTC:{n:'Bitcoin',b:'₿'}, TRX:{n:'Tron',b:'T'}, BNB:{n:'BNB',b:'B'},
-  CAD:{n:'Dólar canadiense',b:'C$'}, MXN:{n:'Peso mexicano',b:'M$'}, GBP:{n:'Libra esterlina',b:'£'},
-  CHF:{n:'Franco suizo',b:'₣'}, ZELLE:{n:'Zelle',b:'Z'}
-};
+/* ================= Recibir ================= */
+function openReceive(){
+  if(!account){toast('Conecta tu wallet primero');connectWallet();return;}
+  $('myAddr').textContent=account;
+  drawQR(account);
+  $('recModal').classList.add('open');
+}
+function drawQR(text){
+  $('qrBox').innerHTML='';
+  new QRCode($('qrBox'),{text:text,width:150,height:150,correctLevel:QRCode.CorrectLevel.M});
+}
+
+/* ================= Tasas elTOQUE ================= */
+const RATE_META={USD:{n:'Dólar estadounidense',b:'$'},EUR:{n:'Euro',b:'€'},MLC:{n:'Moneda libremente convertible',b:'M'},USDT:{n:'Tether',b:'₮'},BTC:{n:'Bitcoin',b:'₿'},TRX:{n:'Tron',b:'T'},BNB:{n:'BNB',b:'B'},CAD:{n:'Dólar canadiense',b:'C$'},MXN:{n:'Peso mexicano',b:'M$'},GBP:{n:'Libra esterlina',b:'£'},CHF:{n:'Franco suizo',b:'₣'},ZELLE:{n:'Zelle',b:'Z'}};
 const RATE_ORDER=['USD','EUR','MLC','ZELLE','CAD','MXN','GBP','CHF','USDT','TRX','BTC','BNB'];
-function fmtCUP(n){
-  n=Number(n);
-  if(!isFinite(n))return '—';
+function fmtCUP(n){n=Number(n);if(!isFinite(n))return '—';
   if(n>=1e6)return (n/1e6).toLocaleString('es-ES',{maximumFractionDigits:2})+' M';
   if(n>=1e4)return Math.round(n).toLocaleString('es-ES');
-  return n.toLocaleString('es-ES',{maximumFractionDigits:2});
-}
+  return n.toLocaleString('es-ES',{maximumFractionDigits:2});}
 
 async function loadCupRate(){
-  const empty=document.getElementById('ratesEmpty');
+  const empty=$('ratesEmpty');
   try{
-    const r=await fetch('/api/cup',{headers:{'accept':'application/json'}});
+    const r=await fetch('/api/cup');
     const d=await r.json();
     if(!r.ok||d.error){
       if(empty)empty.innerHTML=(d&&d.error==='missing_token')
-        ? 'Aún no configuraste el token de elTOQUE.<br>Solicítalo gratis en <a href="https://tasas-token.eltoque.com/" target="_blank" rel="noopener">tasas-token.eltoque.com</a> y guárdalo como <code>ELTOQUE_TOKEN</code>.'
+        ? 'Aún no configuraste el token de elTOQUE.<br>Solicítalo gratis en <a href="https://tasas-token.eltoque.com/" target="_blank" rel="noopener">tasas-token.eltoque.com</a>.'
         : 'Las tasas de elTOQUE no están disponibles ahora mismo.';
       return;
     }
     if(typeof d.usd_cup==='number'&&d.usd_cup>0){
-      CUP_RATE=d.usd_cup; CUP_SOURCE='tasa informal · elTOQUE'; renderTicker(); updateBalance();
+      CUP_RATE=d.usd_cup;CUP_SOURCE='tasa informal · elTOQUE';renderTicker();updateBalance();
     }
     renderRates(d);
-  }catch(e){ if(empty)empty.textContent='No se pudieron cargar las tasas.'; }
+  }catch(e){if(empty)empty.textContent='No se pudieron cargar las tasas.';}
 }
 function renderRates(d){
   const rates=d.rates&&Object.keys(d.rates).length?d.rates:{USD:d.usd_cup,EUR:d.eur_cup,MLC:d.mlc_cup};
-  const body=document.getElementById('ratesBody');
   const rows=RATE_ORDER.filter(c=>rates[c]!=null).map(c=>{
     const m=RATE_META[c]||{n:c,b:c[0]};
-    return `<div class="rate-item">
-      <div class="rate-flag">${m.b}</div>
+    return `<div class="rate-item"><div class="rate-flag">${m.b}</div>
       <div class="rate-code">1 ${c}<small>${m.n}</small></div>
-      <div class="rate-val">${fmtCUP(rates[c])} CUP</div>
-    </div>`;
+      <div class="rate-val">${fmtCUP(rates[c])} CUP</div></div>`;
   }).join('');
-  body.innerHTML=rows||'<div class="rates-empty">Sin datos de tasas.</div>';
-  const foot=document.getElementById('ratesFoot');
+  $('ratesBody').innerHTML=rows||'<div class="rates-empty">Sin datos de tasas.</div>';
   const when=d.updated_at?(' · '+new Date(d.updated_at).toLocaleDateString('es-ES')):'';
-  foot.innerHTML='Fuente: <a href="https://eltoque.com/tasas-de-cambio-cuba" target="_blank" rel="noopener">elTOQUE</a> · valor de referencia'+when;
+  $('ratesFoot').innerHTML='Fuente: <a href="https://eltoque.com/tasas-de-cambio-cuba" target="_blank" rel="noopener">elTOQUE</a> · referencia'+when;
+}
+
+/* ================= Utilidades ================= */
+function openModal(id){$(id).classList.add('open')}
+function closeModal(id){$(id).classList.remove('open')}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'))});
+function copyAddr(){
+  const t=$('myAddr').textContent;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject())
+    .then(()=>toast('Dirección copiada')).catch(()=>toast('No se pudo copiar'));
+}
+let toastTimer;
+function toast(msg){
+  const el=$('toast');el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2600);
 }
 
 /* ================= Init ================= */
-renderTicker();renderAssets();renderTxs();renderSendSelect();updateBalance();loadLivePrices();loadCupRate();
+CFG.paintNetworkUI(null);
+loadPrices(); loadCupRate(); renderAssets(); updateBalance();
+DexWallet.reconnect().then(w=>{if(w){tw=w.tronWeb;account=w.address;const b=$('connectBtn');if(b){b.textContent=account.slice(0,5)+'…'+account.slice(-4);b.classList.add('on');}$('walletLine').innerHTML='<span class="wl-dot"></span>'+account;CFG.paintNetworkUI(tw);loadHoldings();}});
 </script>
+<script src="/cookies.js"></script>
+<script src="/pwa.js"></script>
 </body>
 </html>

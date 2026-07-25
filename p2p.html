@@ -24,9 +24,12 @@ a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 
 .topbar{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,16,24,.92);backdrop-filter:blur(8px);z-index:50}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px}
-.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#E23A52,var(--flag-red));display:grid;place-items:center;color:#fff;font-size:14px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.02em;transition:opacity .15s}
+.logo-mark{width:30px;height:30px;flex:none;display:block}
+.logo-mark svg{width:100%;height:100%;display:block}
+.logo:hover{opacity:.82}
 .logo .cu{color:var(--accent)}
+.net-badge{font-size:10.5px;font-weight:700;background:var(--muted);color:#0A1018;padding:3px 8px;border-radius:6px;letter-spacing:.04em}
 .topnav{display:flex;gap:4px;margin-left:8px}
 .topnav a{padding:8px 14px;border-radius:8px;color:var(--muted);font-size:14px;font-weight:500}
 .topnav a:hover{color:var(--text);background:var(--panel2)}
@@ -54,7 +57,13 @@ a{color:inherit;text-decoration:none}
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:10px;position:relative}
+.card.featured{border-color:rgba(240,194,75,.5);background:linear-gradient(160deg,#1A1710,var(--panel) 55%)}
+.feat-tag{position:absolute;top:-9px;right:14px;background:linear-gradient(135deg,#F0C24B,#C99A2E);color:#241a00;font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.04em}
+.rep{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);margin-top:-2px}
+.rep .stars{color:#F0C24B;letter-spacing:.5px}
+.rep .who{font-weight:600;color:var(--text)}
+.rep .new{color:var(--muted);font-style:italic}
 .card-top{display:flex;align-items:center;gap:10px}
 .tag{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;letter-spacing:.02em}
 .tag.vendo{background:rgba(246,70,93,.14);color:var(--down)}
@@ -101,18 +110,44 @@ a{color:inherit;text-decoration:none}
 
 .foot{max-width:1080px;margin:0 auto;padding:16px 24px 34px;color:var(--muted);font-size:12px;text-align:center}
 .foot a{color:var(--accent)}
-@media(max-width:560px){.wrap{padding:16px}.two{grid-template-columns:1fr}}
+@media(max-width:860px){
+  .toolbar{gap:8px}
+  .seg{width:100%;overflow-x:auto}
+  .seg button{flex:1;white-space:nowrap;font-size:12.5px;padding:8px 10px}
+  .spacer{display:none}
+  .toolbar>.btn{flex:1 1 calc(50% - 4px)}
+  .grid{grid-template-columns:1fr}
+  .card-foot{flex-direction:column;gap:7px}
+  .card-foot a{width:100%}
+}
+@media(max-width:560px){.wrap{padding:16px 14px}.two{grid-template-columns:1fr}}
 </style>
+<meta property="og:title" content="DexCuba">
+<meta property="og:description" content="Mercado P2P de USDT por CUP con escrow. Sin custodia.">
+<meta property="og:image" content="/icon-512.png">
+<meta property="og:url" content="https://dexcuba.com">
+<meta property="og:type" content="website">
+<meta name="application-name" content="DexCuba">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0A1018">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DexCuba">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/mobile.css">
 </head>
 <body>
 
 <header class="topbar">
-  <div class="logo"><span class="logo-mark">★</span>Dex<span class="cu">Cuba</span></div>
+  <a class="logo" href="/" aria-label="DexCuba — ir al inicio"><span class="logo-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><rect x="0" y="0" width="120" height="120" rx="26" fill="#D3273E"/><circle cx="60" cy="60" r="42" fill="none" stroke="#fff" stroke-width="4" opacity=".35"/><path d="M60 24 L70 50 L98 50 L75 66 L84 93 L60 76 L36 93 L45 66 L22 50 L50 50 Z" fill="#fff"/><circle cx="60" cy="60" r="9" fill="#1FC7B6"/></svg></span>Dex<span class="cu">Cuba</span> <span class="net-badge">P2P</span></a>
   <nav class="topnav">
-    <a href="/">Panel</a>
-    <a href="/swap.html">Swap</a>
-    <a href="/p2p.html" class="active">Mercado P2P</a>
-    <a href="/escrow.html">Escrow</a>
+    <a href="/" data-short="Inicio">Panel</a>
+    <a href="/convertir.html" data-short="Convertir">Convertir</a>
+    <a href="/cobrar.html" data-short="Cobrar">Cobrar</a>
+    <a href="/p2p.html" class="active" data-short="P2P">Mercado P2P</a>
+    <a href="/escrow.html" data-short="Escrow">Escrow</a>
+    <a href="/cuenta.html" data-short="Cuenta">Mi cuenta</a>
   </nav>
   <div class="topbar-right">
     <span class="rate-pill" id="ratePill">USD/CUP <b id="ratePillVal">—</b></span>
@@ -132,7 +167,13 @@ a{color:inherit;text-decoration:none}
     <div class="seg" id="segAsset">
       <button data-v="USDT" class="on">USDT</button>
       <button data-v="BTC">BTC</button>
+      <button data-v="NETSWAP">⇄ Cambio de red</button>
       <button data-v="all">Todos</button>
+    </div>
+    <div class="seg" id="segNet">
+      <button data-v="all" class="on">Todas las redes</button>
+      <button data-v="TRC20">TRC-20</button>
+      <button data-v="BEP20">BEP-20</button>
     </div>
     <div class="seg" id="segSide">
       <button data-v="all" class="on">Compra y venta</button>
@@ -154,7 +195,7 @@ a{color:inherit;text-decoration:none}
 <footer class="foot">
   DexCuba P2P · Plataforma no-custodial: no participamos en la liquidación ni retenemos fondos.<br>
   Tasa de referencia USD/CUP del mercado informal, fuente <a href="https://eltoque.com/tasas-de-cambio-cuba" target="_blank" rel="noopener">elTOQUE</a>. Opera bajo tu propio riesgo.
-</footer>
+<br><a href="/legal.html#terminos" style="color:var(--muted);text-decoration:underline">Términos</a> · <a href="/legal.html#privacidad" style="color:var(--muted);text-decoration:underline">Privacidad</a> · <a href="/legal.html#cookies" style="color:var(--muted);text-decoration:underline">Cookies</a> · <a href="/legal.html#riesgos" style="color:var(--muted);text-decoration:underline">Riesgos</a></footer>
 
 <!-- ===== Modal publicar ===== -->
 <div class="overlay" id="formOverlay" role="dialog" aria-modal="true" aria-label="Publicar oferta">
@@ -171,7 +212,25 @@ a{color:inherit;text-decoration:none}
       </div>
       <div class="field">
         <label for="fAsset">Activo</label>
-        <select id="fAsset"><option value="USDT">USDT</option><option value="BTC">BTC</option></select>
+        <select id="fAsset" onchange="toggleNet()"><option value="USDT">USDT</option><option value="BTC">BTC</option><option value="NETSWAP">Cambio TRC-20 ⇄ BEP-20</option></select>
+      </div>
+      <div class="field" id="netField">
+        <label for="fNetwork">Red del USDT</label>
+        <select id="fNetwork">
+          <option value="TRC20">TRC-20 (TRON) — la más extendida</option>
+          <option value="BEP20">BEP-20 (BNB Chain) — comisiones más bajas</option>
+        </select>
+      </div>
+      <div class="field" id="dirField" style="display:none">
+        <label for="fDirection">Qué doy → qué recibo</label>
+        <select id="fDirection">
+          <option value="TRC20_TO_BEP20">Doy TRC-20 → recibo BEP-20</option>
+          <option value="BEP20_TO_TRC20">Doy BEP-20 → recibo TRC-20</option>
+        </select>
+      </div>
+      <div class="field" id="spreadField" style="display:none">
+        <label for="fSpread">Tu comisión (%) sobre el cambio 1:1</label>
+        <input id="fSpread" type="number" step="0.1" inputmode="decimal" placeholder="ej. 0.5">
       </div>
     </div>
 
@@ -220,7 +279,7 @@ const METHODS=['Efectivo','Transferencia CUP','Transfermóvil','Enzona','Zelle',
 const ASSET_COLOR={USDT:'#26A17B',BTC:'#F7931A'};
 let CUP_REF=null;
 let allOffers=[];
-let fAsset='USDT', fSide='all';
+let fAsset='USDT', fSide='all', fNet='all';
 
 /* ---- Tasa de referencia elTOQUE ---- */
 async function loadRef(){
@@ -250,6 +309,16 @@ function renderError(code){
 }
 
 /* ---- Filtros ---- */
+function toggleNet(){
+  const v=document.getElementById('fAsset').value;
+  const show=(id,on)=>{const e=document.getElementById(id);if(e)e.style.display=on?'block':'none';};
+  show('netField',v==='USDT');
+  show('dirField',v==='NETSWAP');show('spreadField',v==='NETSWAP');
+  // En cambio de red no aplican precio CUP ni métodos de pago
+  const rate=document.getElementById('fRate'); if(rate)rate.closest('.field').style.display=v==='NETSWAP'?'none':'block';
+  const met=document.getElementById('fMethods'); if(met)met.closest('.field').style.display=v==='NETSWAP'?'none':'block';
+  const side=document.getElementById('fSide'); if(side)side.closest('.field').style.display=v==='NETSWAP'?'none':'block';
+}
 function wireSeg(id,cb){
   document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('on'));
@@ -257,29 +326,40 @@ function wireSeg(id,cb){
   });
 }
 wireSeg('segAsset',v=>{fAsset=v;render();});
+wireSeg('segNet',v=>{fNet=v;render();});
 wireSeg('segSide',v=>{fSide=v;render();});
 
 /* ---- Render ---- */
 function render(){
   const g=document.getElementById('grid');
-  const rows=allOffers.filter(o=>(fAsset==='all'||o.asset===fAsset)&&(fSide==='all'||o.side===fSide));
+  const rows=allOffers.filter(o=>{
+    if(fAsset==='NETSWAP')return o.type==='netswap';
+    if(o.type==='netswap')return false;
+    return (fAsset==='all'||o.asset===fAsset)&&(fSide==='all'||o.side===fSide)&&(fNet==='all'||o.network===fNet||(!o.network&&fNet==='TRC20'));
+  });
   document.getElementById('empty').style.display=rows.length?'none':'block';
   if(!rows.length&&!allOffers.length){/* keep whatever error/empty */}
   g.innerHTML=rows.map(card).join('');
 }
 function card(o){
+  if(o.type==='netswap')return swapCard(o);
   const sideLabel=o.side==='vendo'?'VENDE':'COMPRA';
   const refDiff=CUP_REF?((o.cup_per_usd-CUP_REF)/CUP_REF*100):null;
   const diffStr=refDiff!==null?(refDiff>=0?'+':'')+refDiff.toFixed(1)+'% vs elTOQUE':'';
   const methods=o.methods.map(m=>`<span class="chip">${esc(m)}</span>`).join('');
   const contact=esc(o.contact);
   const link=contactLink(o.contact);
-  return `<div class="card">
+  const rep = o.rating
+    ? `<div class="rep"><span class="who">${esc(o.alias||'Anónimo')}</span><span class="stars">${'★'.repeat(Math.round(o.rating))}</span><span>${o.rating.toFixed(1)} · ${o.trades_ok} ops</span></div>`
+    : (o.owner ? `<div class="rep"><span class="who">${esc(o.alias||'Anónimo')}</span><span class="new">sin valoraciones aún</span></div>` : '');
+  return `<div class="card${o.featured?' featured':''}">
+    ${o.featured?'<span class="feat-tag">★ DESTACADA</span>':''}
     <div class="card-top">
       <span class="tag ${o.side}">${sideLabel}</span>
       <span class="asset-badge"><span class="asset-ic" style="background:${ASSET_COLOR[o.asset]||'#555'}">${o.asset[0]}</span>${o.asset}</span>
       <span class="rate"><b>${o.cup_per_usd}</b><span>CUP/USD ${diffStr}</span></span>
     </div>
+    ${rep}
     <div class="card-row"><span class="k">Límites</span><span class="v">$${o.min_usd} – $${o.max_usd}</span></div>
     <div class="methods">${methods}</div>
     ${o.note?`<div class="note">"${esc(o.note)}"</div>`:''}
@@ -291,7 +371,33 @@ function card(o){
 }
 function escrowLink(o){
   const p=new URLSearchParams({asset:o.asset,side:o.side,rate:o.cup_per_usd,min:o.min_usd,max:o.max_usd,contact:o.contact});
-  return '/escrow.html?'+p.toString();
+  // Cada red tiene su escrow: las ofertas BEP-20 van al de BSC
+  const page=o.network==='BEP20'?'/escrow-bsc.html':'/escrow.html';
+  return page+'?'+p.toString();
+}
+function swapCard(o){
+  const give=o.direction==='TRC20_TO_BEP20'?'TRC-20':'BEP-20';
+  const get =o.direction==='TRC20_TO_BEP20'?'BEP-20':'TRC-20';
+  const rep = o.rating
+    ? `<div class="rep"><span class="who">${esc(o.alias||'Anónimo')}</span><span class="stars">${'★'.repeat(Math.round(o.rating))}</span><span>${o.rating.toFixed(1)} · ${o.trades_ok} ops</span></div>`
+    : (o.owner ? `<div class="rep"><span class="who">${esc(o.alias||'Anónimo')}</span><span class="new">sin valoraciones aún</span></div>` : '');
+  const link=contactLink(o.contact);
+  return `<div class="card${o.featured?' featured':''}">
+    ${o.featured?'<span class="feat-tag">★ DESTACADA</span>':''}
+    <div class="card-top">
+      <span class="side-tag" style="background:rgba(240,185,11,.14);color:#F0B90B">⇄ CAMBIO DE RED</span>
+      <span class="net-tag">${give}</span><span style="color:var(--muted)">→</span><span class="net-tag bep">${get}</span>
+    </div>
+    ${rep}
+    <div class="card-row"><span class="k">Da / Recibe</span><span class="v">USDT ${give} → USDT ${get}</span></div>
+    <div class="card-row"><span class="k">Tasa</span><span class="v">1 : 1 ${o.spread_pct>0?('− '+o.spread_pct+'% comisión'):'sin comisión'}</span></div>
+    <div class="card-row"><span class="k">Límites</span><span class="v">${o.min_usd} – ${o.max_usd} USD</span></div>
+    ${o.note?`<div class="card-note">${esc(o.note)}</div>`:''}
+    <div class="card-foot">
+      ${link?`<a class="contact-btn" href="${link}" target="_blank" rel="noopener">Contactar</a>`:`<span class="contact-btn" style="cursor:default">${esc(o.contact)}</span>`}
+      <a class="escrow-btn" href="${o.direction==='TRC20_TO_BEP20'?'/escrow.html':'/escrow-bsc.html'}">Proteger con escrow</a>
+    </div>
+  </div>`;
 }
 function contactLink(c){
   c=(c||'').trim();
@@ -320,9 +426,19 @@ function updateRateHint(){
 async function submitOffer(){
   const msg=document.getElementById('formMsg');
   const methods=[...document.querySelectorAll('#fMethods input:checked')].map(i=>i.value);
-  const payload={
+  const isSwap=document.getElementById('fAsset').value==='NETSWAP';
+  const payload=isSwap?{
+    type:'netswap',
+    direction:document.getElementById('fDirection').value,
+    spread_pct:Number(document.getElementById('fSpread').value||0),
+    min_usd:document.getElementById('fMin').value,
+    max_usd:document.getElementById('fMax').value,
+    contact:document.getElementById('fContact').value,
+    note:document.getElementById('fNote').value,
+  }:{
     side:document.getElementById('fSide').value,
     asset:document.getElementById('fAsset').value,
+    network:document.getElementById('fNetwork')?document.getElementById('fNetwork').value:'TRC20',
     cup_per_usd:document.getElementById('fRate').value,
     min_usd:document.getElementById('fMin').value,
     max_usd:document.getElementById('fMax').value,
@@ -330,9 +446,12 @@ async function submitOffer(){
     contact:document.getElementById('fContact').value,
     note:document.getElementById('fNote').value,
   };
-  const errs={tasa_invalida:'Revisa el precio (CUP por USD).',limites_invalidos:'Revisa los límites mínimo y máximo.',metodos_requeridos:'Elige al menos un método de pago.',contacto_requerido:'Añade un contacto válido.',kv_no_configurado:'Almacenamiento no configurado aún.'};
+  const errs={limite_alcanzado:'Alcanzaste tu límite de ofertas activas. Hazte VIP para publicar hasta 15.',tasa_invalida:'Revisa el precio (CUP por USD).',limites_invalidos:'Revisa los límites mínimo y máximo.',metodos_requeridos:'Elige al menos un método de pago.',contacto_requerido:'Añade un contacto válido.',direccion_invalida:'Elige la dirección del cambio.',spread_invalido:'La comisión debe estar entre 0 y 10 %.',kv_no_configurado:'Almacenamiento no configurado aún.'};
   try{
-    const r=await fetch('/api/offers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const h={'Content-Type':'application/json'};
+    let tk=null; try{tk=localStorage.getItem('dx_token')}catch(e){}
+    if(tk)h['Authorization']='Bearer '+tk;
+    const r=await fetch('/api/offers',{method:'POST',headers:h,body:JSON.stringify(payload)});
     const d=await r.json();
     if(!r.ok||d.error){msg.className='form-msg err';msg.textContent=errs[d.error]||'No se pudo publicar. Revisa los datos.';return;}
     msg.className='form-msg ok';msg.textContent='¡Oferta publicada!';
@@ -345,5 +464,7 @@ async function submitOffer(){
 /* ---- Init ---- */
 loadRef();loadOffers();
 </script>
+<script src="/cookies.js"></script>
+<script src="/pwa.js"></script>
 </body>
 </html>

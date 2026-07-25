@@ -1,0 +1,148 @@
+/* =====================================================================
+   DexCuba — adaptación móvil compartida
+   ---------------------------------------------------------------------
+   Se carga después de los estilos de cada página, así que puede corregir
+   lo que haga falta sin tocar el CSS individual de cada una.
+   ===================================================================== */
+
+/* Nunca desbordar horizontalmente: la causa nº1 de "no se ve bien en móvil" */
+html, body { max-width: 100%; overflow-x: hidden; }
+img, svg, table { max-width: 100%; }
+
+/* ---------- Barra superior en móvil ---------- */
+@media (max-width: 860px) {
+  .topbar {
+    height: auto;
+    min-height: 56px;
+    padding: 0 14px;
+    gap: 10px;
+    flex-wrap: nowrap;
+  }
+  .logo { font-size: 17px; gap: 8px; flex: none; }
+  .logo-mark { width: 26px; height: 26px; }
+
+  /* La navegación pasa a una barra inferior fija */
+  .topnav {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    margin: 0;
+    background: #101826;
+    border-top: 1px solid #243247;
+    display: flex;
+    justify-content: space-around;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    z-index: 90;
+    gap: 0;
+  }
+  .topnav a, .topnav button {
+    flex: 1;
+    text-align: center;
+    padding: 9px 4px;
+    font-size: 11.5px;
+    border-radius: 8px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .topnav a.active, .topnav button.active { background: rgba(31,199,182,.1); }
+
+  /* Deja hueco para la barra inferior */
+  body { padding-bottom: 62px; }
+
+  .topbar-right { gap: 7px; }
+  .wallet-btn, .connect-btn { padding: 8px 12px; font-size: 12px; }
+  .rate-pill, .bal-pill, .pill { display: none; }
+  .net-badge { font-size: 9.5px; padding: 2px 6px; }
+}
+
+/* ---------- Contenido ---------- */
+@media (max-width: 860px) {
+  .wrap, .shell { padding: 16px 14px; }
+  .card, .panel, section { padding: 16px 15px; border-radius: 12px; }
+  .balance-card { padding: 20px 18px; }
+  .balance-value { font-size: 30px; }
+
+  h1 { font-size: 21px; }
+  .card h2, .panel h2, section h2 { font-size: 15px; }
+
+  /* Rejillas a una columna */
+  .grid2, .cards-grid, .grid, .two, .btn-row, .stats { grid-template-columns: 1fr !important; }
+  .stats { grid-template-columns: repeat(3, 1fr) !important; }
+
+  /* Botones de acción: dos por fila en vez de cuatro apretadas */
+  .actions { gap: 8px; }
+  .actions .btn { flex: 1 1 calc(50% - 4px); min-width: 0; padding: 11px 8px; font-size: 13px; }
+
+  /* Tablas: permitir desplazamiento lateral en vez de romper el layout */
+  table { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+  thead, tbody, tr { display: table; width: 100%; table-layout: fixed; }
+  th, td { padding: 10px 6px; font-size: 13px; }
+
+  /* Modales pegados a los bordes */
+  .modal, .tok-modal { padding: 20px 18px; border-radius: 14px; }
+  .overlay { padding: 12px; align-items: flex-start; padding-top: 40px; }
+
+  /* Direcciones largas: que corten en vez de desbordar */
+  code, .v, .addr-row code, .tv-row .v, .prof-info span { word-break: break-all; }
+}
+
+/* ---------- Pantallas muy estrechas ---------- */
+@media (max-width: 400px) {
+  .balance-value { font-size: 26px; }
+  .actions .btn { flex: 1 1 100%; }
+  .topnav a, .topnav button { font-size: 10.5px; padding: 8px 2px; }
+  .logo { font-size: 15px; }
+  .stat b { font-size: 17px; }
+}
+
+/* ---------- Toque cómodo ---------- */
+@media (hover: none) {
+  .btn, .mini-btn, .contact-btn, .escrow-btn, .quick, .topnav a { min-height: 42px; }
+  input, select, textarea { font-size: 16px; } /* evita el zoom automático en iOS */
+}
+
+/* ---------- Barras fijas y banners no se solapan ---------- */
+@media (max-width: 860px) {
+  #dxCookieBar, #dxPwaBar { bottom: 64px; }
+  .toast { bottom: 76px; }
+  .cookie-bar { bottom: 62px; }
+}
+
+/* Etiquetas cortas de navegación en móvil */
+@media (max-width: 860px) {
+  .topnav a[data-short], .topnav button[data-short] { font-size: 0; }
+  .topnav a[data-short]::after, .topnav button[data-short]::after {
+    content: attr(data-short);
+    font-size: 11.5px;
+  }
+}
+@media (max-width: 400px) {
+  .topnav a[data-short]::after, .topnav button[data-short]::after { font-size: 10.5px; }
+}
+
+/* ---------- Desplegables (select) en tema oscuro ---------- */
+/* Sin esto, la lista de opciones sale con los colores del sistema
+   (texto claro sobre fondo claro) y no se lee. */
+html { color-scheme: dark; }
+select {
+  background: #16202F;
+  color: #EAF0F6;
+  border: 1px solid #243247;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  width: 100%;
+  appearance: auto;
+}
+select:focus { outline: none; border-color: #1FC7B6; }
+select option { background: #16202F; color: #EAF0F6; }
+
+/* Con 7 entradas, la barra inferior necesita letras algo más compactas */
+@media (max-width: 860px) {
+  .topnav a, .topnav button { padding: 9px 1px; font-size: 10.5px; letter-spacing: -0.01em; }
+}
+@media (max-width: 380px) {
+  .topnav a, .topnav button { font-size: 9.5px; }
+}

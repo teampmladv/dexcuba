@@ -19,13 +19,24 @@
 body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input,select{font-family:inherit;color:var(--text)}
+select{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14px;width:100%}
+select option{background:#16202F;color:#EAF0F6}
+select:focus{outline:none;border-color:var(--accent)}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 
 .topbar{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,16,24,.92);backdrop-filter:blur(8px);z-index:50}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px}
-.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#E23A52,var(--flag-red));display:grid;place-items:center;color:#fff;font-size:14px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.02em;transition:opacity .15s}
+.logo-mark{width:30px;height:30px;flex:none;display:block}
+.logo-mark svg{width:100%;height:100%;display:block}
+.logo:hover{opacity:.82}
 .logo .cu{color:var(--accent)}
+.net-badge{font-size:10.5px;font-weight:700;background:var(--warn);color:#2A1E00;padding:3px 8px;border-radius:6px;letter-spacing:.04em;white-space:nowrap}
+.net-badge.mainnet{background:var(--up);color:#04231A}
+.net-badge.wrong{background:var(--down);color:#fff}
+.net-strip{background:repeating-linear-gradient(45deg,rgba(232,179,65,.13),rgba(232,179,65,.13) 10px,rgba(232,179,65,.06) 10px,rgba(232,179,65,.06) 20px);border-bottom:1px solid rgba(232,179,65,.35);color:var(--warn);text-align:center;padding:6px 16px;font-size:12px;font-weight:600;letter-spacing:.02em}
+.net-strip.mainnet{background:rgba(246,70,93,.1);border-bottom-color:rgba(246,70,93,.35);color:var(--down)}
+.net-strip.wrong{background:rgba(246,70,93,.12);border-bottom-color:rgba(246,70,93,.4);color:var(--down)}
 .topnav{display:flex;gap:4px;margin-left:8px}
 .topnav a{padding:8px 14px;border-radius:8px;color:var(--muted);font-size:14px;font-weight:500}
 .topnav a:hover{color:var(--text);background:var(--panel2)}
@@ -101,30 +112,56 @@ a{color:inherit;text-decoration:none}
 .safety{background:rgba(232,179,65,.07);border:1px solid rgba(232,179,65,.25);border-radius:12px;padding:12px 15px;margin-top:8px;font-size:12px;color:var(--muted);line-height:1.6}
 .safety b{color:var(--warn)}
 .foot{max-width:940px;margin:0 auto;padding:14px 20px 34px;color:var(--muted);font-size:11.5px;text-align:center}
-@media(max-width:520px){.two,.btn-row{grid-template-columns:1fr}.flow{flex-wrap:wrap}}
+@media(max-width:860px){
+  .flow{flex-wrap:wrap;gap:6px}
+  .flow .step{flex:1 1 calc(50% - 3px);font-size:10.5px;padding:8px 6px}
+  .flow .step b{font-size:11.5px}
+  .lookup{flex-direction:column}
+  .lookup button{width:100%}
+  .cards-grid{gap:14px}
+}
+@media(max-width:520px){.two,.btn-row{grid-template-columns:1fr}}
 </style>
+<meta property="og:title" content="DexCuba">
+<meta property="og:description" content="Mercado P2P de USDT por CUP con escrow. Sin custodia.">
+<meta property="og:image" content="/icon-512.png">
+<meta property="og:url" content="https://dexcuba.com">
+<meta property="og:type" content="website">
+<meta name="application-name" content="DexCuba">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0A1018">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DexCuba">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/mobile.css">
 </head>
 <body>
 
 <header class="topbar">
-  <div class="logo"><span class="logo-mark">★</span>Dex<span class="cu">Cuba</span></div>
+  <a class="logo" href="/" aria-label="DexCuba — ir al inicio"><span class="logo-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><rect x="0" y="0" width="120" height="120" rx="26" fill="#D3273E"/><circle cx="60" cy="60" r="42" fill="none" stroke="#fff" stroke-width="4" opacity=".35"/><path d="M60 24 L70 50 L98 50 L75 66 L84 93 L60 76 L36 93 L45 66 L22 50 L50 50 Z" fill="#fff"/><circle cx="60" cy="60" r="9" fill="#1FC7B6"/></svg></span>Dex<span class="cu">Cuba</span> <span class="net-badge" id="netBadge">NILE · PRUEBAS</span></a>
   <nav class="topnav">
-    <a href="/">Panel</a>
-    <a href="/swap.html">Swap</a>
-    <a href="/p2p.html">Mercado P2P</a>
-    <a href="/escrow.html" class="active">Escrow</a>
+    <a href="/" data-short="Inicio">Panel</a>
+    <a href="/convertir.html" data-short="Convertir">Convertir</a>
+    <a href="/cobrar.html" data-short="Cobrar">Cobrar</a>
+    <a href="/p2p.html" data-short="P2P">Mercado P2P</a>
+    <a href="/cuenta.html" data-short="Cuenta">Mi cuenta</a>
+    <a href="/escrow.html" class="active" data-short="Escrow">Escrow</a>
   </nav>
   <div class="topbar-right">
     <span class="bal-pill" id="balPill"></span>
-    <button class="wallet-btn" id="walletBtn" onclick="connectWallet()">Conectar TronLink</button>
+    <button class="wallet-btn" id="walletBtn" onclick="connectWallet()">Conectar wallet</button>
   </div>
 </header>
 
+<div class="net-strip" id="netStrip"></div>
+
 <div class="wrap">
-  <div class="setup" id="setupBanner">
-    ⚙️ <b>Falta configurar el contrato.</b> Despliega <code>DexCubaEscrow.sol</code> en la testnet Nile,
-    y pega su dirección en <code>ESCROW_ADDRESS</code> dentro de <code>escrow.html</code>. Mientras esté vacío,
-    las acciones están deshabilitadas por seguridad.
+
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <span style="padding:7px 14px;border-radius:9px;border:1px solid var(--accent);background:rgba(31,199,182,.1);font-size:12.5px;color:var(--accent);font-weight:600">USDT TRC-20 · TRON ✓</span>
+    <a href="/escrow-bsc.html" style="padding:7px 14px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);font-size:12.5px;color:var(--muted)">USDT BEP-20 · BSC →</a>
   </div>
 
   <div class="offer-ctx" id="offerCtx"></div>
@@ -156,6 +193,7 @@ a{color:inherit;text-decoration:none}
         </div>
         <div class="fee-preview" id="feePreview">Comisión DexCuba 0,5% · se descuenta al liberarse (en reembolsos no se cobra).</div>
         <button class="btn btn-accent" id="btnCreate" onclick="createTrade()" disabled>Aprobar y bloquear</button>
+        <button class="btn btn-ghost" id="btnFaucet" style="margin-top:8px;display:none" onclick="getTestUSDT()">🧪 Darme 1000 USDT de prueba</button>
       </div>
     </div>
 
@@ -199,26 +237,30 @@ a{color:inherit;text-decoration:none}
   <div class="msg" id="msg"></div>
 
   <div class="safety">
-    <b>Contrato sin auditar.</b> Pruébalo en la testnet <b>Nile</b> con montos pequeños y encarga una auditoría
-    antes de mover dinero real. El árbitro es un punto de confianza: idealmente debe ser un multisig o un
-    tercero neutral, no una sola llave. El árbitro solo puede enviar los fondos al comprador o al vendedor,
-    nunca a sí mismo.
+    <b>Cómo funciona tu protección:</b> tu USDT queda bloqueado en un contrato inteligente,
+    no en manos de DexCuba. Solo puede liberarse hacia el comprador o devolverse al vendedor —
+    ni siquiera el árbitro puede quedarse los fondos.<br><br>
+    <b>Opera con cabeza:</b> las transacciones on-chain son irreversibles. Verifica siempre la
+    dirección de destino, empieza con importes pequeños si es tu primera vez con alguien, y
+    desconfía de quien te pida pagar fuera del escrow.
+    <a href="/legal.html#riesgos" style="color:var(--warn)">Más sobre riesgos</a>.
   </div>
 </div>
 
-<footer class="foot">DexCuba Escrow · contrato no-custodial sobre TRON. Los fondos solo salen a comprador o vendedor.</footer>
+<footer class="foot">DexCuba Escrow · contrato no-custodial sobre TRON. Los fondos solo salen a comprador o vendedor.<br><a href="/legal.html#terminos" style="color:var(--muted);text-decoration:underline">Términos</a> · <a href="/legal.html#privacidad" style="color:var(--muted);text-decoration:underline">Privacidad</a> · <a href="/legal.html#cookies" style="color:var(--muted);text-decoration:underline">Cookies</a> · <a href="/legal.html#riesgos" style="color:var(--muted);text-decoration:underline">Riesgos</a></footer>
 
+<script src="/config.js"></script>
+<script src="/wallet.js"></script>
 <script>
-/* =====================================================================
-   CONFIGURACIÓN — VERIFICAR ANTES DE MAINNET
-   ESCROW_ADDRESS: dirección del contrato DexCubaEscrow desplegado.
-   USDT_ADDRESS: token bloqueado (debe coincidir con el del constructor).
-   Empieza SIEMPRE en la testnet Nile.
-   ===================================================================== */
-const ESCROW_ADDRESS = ''; // <-- PEGAR dirección del contrato desplegado
-const USDT_ADDRESS   = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'; // USDT-TRC20 mainnet (verifícalo)
-const USDT_DECIMALS  = 6;
-const FEE_BPS        = 50; // 0,5% — debe coincidir con el feeBps del contrato desplegado
+/* ===== Configuración desde config.js (detecta Nile vs mainnet) ===== */
+const CFG            = window.DEXCUBA;
+const ESCROW_ADDRESS = CFG.net.escrow;
+const USDT_ADDRESS   = CFG.net.usdt;
+const USDT_DECIMALS  = CFG.USDT_DECIMALS;
+const FEE_BPS        = CFG.FEE_BPS;
+const FEE_LIMIT      = CFG.FEE_LIMIT;
+
+function checkNetwork(){ CFG.paintNetworkUI(tw); }
 
 const ESCROW_ABI = [
   {"inputs":[{"name":"buyer","type":"address"},{"name":"arbitrator","type":"address"},{"name":"amount","type":"uint256"}],"name":"createTrade","outputs":[{"name":"id","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},
@@ -229,7 +271,9 @@ const ESCROW_ABI = [
 ];
 const TRC20_ABI=[
   {"constant":false,"inputs":[{"name":"spender","type":"address"},{"name":"value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
-  {"constant":true,"inputs":[{"name":"who","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+  {"constant":true,"inputs":[{"name":"who","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"constant":true,"inputs":[{"name":"owner","type":"address"},{"name":"spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"constant":false,"inputs":[{"name":"to","type":"address"},{"name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"}
 ];
 const STATES=['NONE','FUNDED','PAID','RELEASED','REFUNDED'];
 
@@ -239,7 +283,6 @@ function showMsg(t,c){const m=$('msg');m.textContent=t;m.className='msg show '+c
 function clearMsg(){$('msg').className='msg';}
 function toUnits(v){return BigInt(Math.round(Number(v)*10**USDT_DECIMALS));}
 
-if(!ESCROW_ADDRESS){$('setupBanner').classList.add('show');}
 
 function updateFeePreview(){
   const v=parseFloat(($('cAmount').value||'').replace(',','.'));
@@ -250,20 +293,13 @@ function updateFeePreview(){
 }
 
 async function connectWallet(){
-  if(!window.tronLink&&!window.tronWeb){
-    showMsg('No se detectó TronLink. Instálalo desde tronlink.org y recarga.','err');
-    window.open('https://www.tronlink.org/','_blank');
-    return;
-  }
-  try{
-    if(window.tronLink&&window.tronLink.request){await window.tronLink.request({method:'tron_requestAccounts'});}
-    tw=window.tronWeb;
-    if(!tw||!tw.defaultAddress||!tw.defaultAddress.base58){showMsg('Desbloquea TronLink y reintenta.','err');return;}
-    account=tw.defaultAddress.base58;
-    $('walletBtn').textContent=account.slice(0,5)+'…'+account.slice(-4);
-    $('walletBtn').classList.add('on');
-    enableActions();clearMsg();showBalance();
-  }catch(e){showMsg('No se pudo conectar: '+(e.message||e),'err');}
+  const w=await DexWallet.connect();
+  if(!w){showMsg('No se pudo conectar. Instala o desbloquea tu wallet TRON.','err');return;}
+  tw=w.tronWeb; account=w.address;
+  $('walletBtn').textContent=account.slice(0,5)+'…'+account.slice(-4);
+  $('walletBtn').classList.add('on');
+  $('walletBtn').title=w.name;
+  enableActions();clearMsg();showBalance();checkNetwork();
 }
 async function showBalance(){
   try{
@@ -273,13 +309,87 @@ async function showBalance(){
     const el=$('balPill');el.style.display='inline-block';el.textContent=v.toFixed(2)+' USDT';
   }catch(e){/* red distinta o token no presente */}
 }
-if(window.tronLink&&window.tronLink.on){window.tronLink.on('accountsChanged',()=>location.reload());}
+DexWallet.onAccountChange(()=>location.reload());
 function enableActions(){
   const ok=account&&ESCROW_ADDRESS;
   ['btnCreate','btnPaid','btnRelease','btnRefund'].forEach(id=>$(id).disabled=!ok);
+  // El faucet solo tiene sentido en redes de prueba (el USDT real no tiene mint)
+  const fb=$('btnFaucet');
+  if(fb)fb.style.display=CFG.net.faucet?'block':'none';
+  if(!ESCROW_ADDRESS){
+    showMsg('El contrato de escrow aún no está desplegado en '+CFG.net.name+'.','err');
+  }
 }
 
 async function escrow(){return await tw.contract(ESCROW_ABI,ESCROW_ADDRESS);}
+
+/* Espera a que la transacción se mine y comprueba que NO revirtió.
+   En Nile/mainnet la confirmación puede tardar; damos hasta ~90 s. */
+async function waitForTx(txid,label,onTick){
+  for(let i=0;i<30;i++){
+    await new Promise(r=>setTimeout(r,3000));
+    if(onTick)onTick(i);
+    try{
+      const info=await tw.trx.getTransactionInfo(txid);
+      if(info&&info.receipt){
+        const res=info.receipt.result;
+        if(res==='SUCCESS')return true;
+        if(res){
+          let reason='';
+          if(info.resMessage){try{reason=tw.toUtf8(info.resMessage);}catch(e){}}
+          throw new Error((label||'Transacción')+' revertida'+(reason?': '+reason:' ('+res+')'));
+        }
+      }
+    }catch(e){ if(e.message&&e.message.includes('revertida'))throw e; }
+  }
+  throw new Error('Tiempo de espera agotado para '+(label||'la transacción')+'. Puede haberse confirmado igualmente: consulta el trade o revisa TronScan.');
+}
+
+/* Lecturas de bajo nivel: no dependen del ABI y son más fiables. */
+async function readAllowance(){
+  const r=await tw.transactionBuilder.triggerConstantContract(
+    tw.address.toHex(USDT_ADDRESS),'allowance(address,address)',{},
+    [{type:'address',value:account},{type:'address',value:ESCROW_ADDRESS}]);
+  return BigInt('0x'+r.constant_result[0]);
+}
+async function readNextId(){
+  const r=await tw.transactionBuilder.triggerConstantContract(
+    tw.address.toHex(ESCROW_ADDRESS),'nextId()',{},[]);
+  return parseInt(r.constant_result[0],16);
+}
+/* Espera activa a que el allowance alcance el mínimo requerido. */
+async function waitForAllowance(min,onTick){
+  for(let i=0;i<25;i++){
+    try{ if(await readAllowance()>=min)return true; }catch(e){}
+    if(onTick)onTick(i);
+    await new Promise(r=>setTimeout(r,3000));
+  }
+  return false;
+}
+
+async function usdtBalance(){
+  const c=await tw.contract(TRC20_ABI,USDT_ADDRESS);
+  const b=await c.balanceOf(account).call();
+  return BigInt(b.toString());
+}
+
+async function getTestUSDT(){
+  if(!CFG.net.faucet){showMsg('El faucet solo existe en la red de pruebas.','err');return;}
+  if(!account){showMsg('Conecta tu wallet primero.','err');return;}
+  try{
+    let before=0n; try{ before=await usdtBalance(); }catch(e){}
+    showMsg('Firma el mint en tu wallet…','info');
+    const c=await tw.contract(TRC20_ABI,USDT_ADDRESS);
+    await c.mint(account,'1000000000').send({feeLimit:150000000});
+    showMsg('Confirmando en la red…','info');
+    for(let i=0;i<30;i++){
+      await new Promise(r=>setTimeout(r,3000));
+      showMsg('Confirmando en la red… ('+((i+1)*3)+'s)','info');
+      try{ if(await usdtBalance()>before){showMsg('✓ 1000 USDT de prueba en tu wallet.','ok');showBalance();return;} }catch(e){}
+    }
+    showMsg('No se confirmó a tiempo. Espera un momento y recarga para ver tu saldo.','err');
+  }catch(e){showMsg('✗ '+friendlyError(e),'err');}
+}
 
 async function createTrade(){
   const buyer=$('cBuyer').value.trim(), arb=$('cArb').value.trim();
@@ -287,42 +397,122 @@ async function createTrade(){
   if(!tw.isAddress(buyer)){showMsg('Dirección de comprador inválida.','err');return;}
   if(!tw.isAddress(arb)){showMsg('Dirección de árbitro inválida.','err');return;}
   if(!amt||amt<=0){showMsg('Monto inválido.','err');return;}
-  const units=toUnits(amt).toString();
+  if(buyer===account){showMsg('El comprador no puede ser tu propia dirección.','err');return;}
+  const units=toUnits(amt);
+  const btn=$('btnCreate');btn.disabled=true;
   try{
-    showMsg('1/2 · Aprobando USDT en TronLink…','info');
-    const usdt=await tw.contract(TRC20_ABI,USDT_ADDRESS);
-    await usdt.approve(ESCROW_ADDRESS,units).send();
-    showMsg('2/2 · Creando y financiando el trade…','info');
+    // 1) Límite por operación definido en el contrato
+    try{
+      const r=await tw.transactionBuilder.triggerConstantContract(
+        tw.address.toHex(ESCROW_ADDRESS),'maxTradeAmount()',{},[]);
+      const max=BigInt('0x'+r.constant_result[0]);
+      if(max>0n&&units>max){
+        showMsg('Por seguridad, el máximo por operación es '+(Number(max)/1e6)+' USDT. Divide la operación en varias.','err');
+        btn.disabled=false;return;
+      }
+    }catch(e){}
+
+    // 2) Saldo suficiente (evita gastar gas en una tx condenada)
+    showMsg('Comprobando tu saldo…','info');
+    const bal=await usdtBalance();
+    if(bal<units){
+      showMsg('Saldo insuficiente: tienes '+(Number(bal)/1e6).toFixed(2)+' USDT y necesitas '+amt+'.','err');
+      btn.disabled=false;return;
+    }
+
+    // 2) ¿Ya hay permiso suficiente? Si sí, nos saltamos el approve.
+    let allow=0n;
+    try{ allow=await readAllowance(); }catch(e){}
+    if(allow<units){
+      showMsg('1/3 · Firma la aprobación en tu wallet (hazlo rápido: las transacciones caducan)…','info');
+      const usdt=await tw.contract(TRC20_ABI,USDT_ADDRESS);
+      const txA=await usdt.approve(ESCROW_ADDRESS,units.toString()).send({feeLimit:150000000});
+      showMsg('2/3 · Esperando a que la red registre el permiso…','info');
+      const ok=await waitForAllowance(units,i=>{
+        showMsg('2/3 · Esperando a que la red registre el permiso… ('+((i+1)*3)+'s)','info');
+      });
+      if(!ok)throw new Error('El permiso no se registró a tiempo. Vuelve a intentarlo en unos segundos (no hace falta repetir el approve si ya se confirmó).');
+    }else{
+      showMsg('Permiso ya concedido, creando el trade…','info');
+    }
+
+    // 3) createTrade — ahora el allowance está garantizado
+    showMsg('3/3 · Firma la creación del trade en tu wallet…','info');
     const c=await escrow();
-    const tx=await c.createTrade(buyer,arb,units).send();
-    showMsg('✓ USDT bloqueado. Tx: '+String(tx).slice(0,10)+'… — revisa el evento Created para tu ID.','ok');
-  }catch(e){showMsg('Fallido o cancelado: '+(e.message||e),'err');}
+    const tx=await c.createTrade(buyer,arb,units.toString()).send({feeLimit:150000000});
+    showMsg('3/3 · Confirmando en la red…','info');
+    await waitForTx(tx,'La creación del trade',i=>{
+      showMsg('3/3 · Confirmando en la red… ('+((i+1)*3)+'s)','info');
+    });
+
+    const nid=await readNextId();
+    showMsg('✓ USDT bloqueado. El ID de tu trade es '+(nid-1)+' — anótalo.','ok');
+    $('rId').value=String(nid-1);
+    $('pId').value=String(nid-1);
+    $('lookupId').value=String(nid-1);
+    showBalance();
+  }catch(e){showMsg('✗ '+friendlyError(e),'err');}
+  btn.disabled=false;
 }
 
-async function markPaid(){
-  const id=$('pId').value.trim();if(!id){showMsg('Indica el ID.','err');return;}
-  try{showMsg('Marcando pagado…','info');const c=await escrow();const tx=await c.markPaid(id).send();
-    showMsg('✓ Marcado como pagado. Tx: '+String(tx).slice(0,10)+'…','ok');}
-  catch(e){showMsg('Fallido: '+(e.message||e),'err');}
+/* Traduce errores técnicos a algo accionable para el usuario. */
+function friendlyError(e){
+  const m=(e&&e.message)||String(e);
+  if(/expired/i.test(m))return 'La firma tardó demasiado y caducó. Vuelve a intentarlo y confirma en tu wallet sin demora.';
+  if(/rejected|denied|cancel/i.test(m))return 'Cancelaste la operación en tu wallet.';
+  if(/allowance/i.test(m))return 'Falta el permiso sobre tus USDT. Reintenta: se pedirá de nuevo.';
+  if(/balance|insufficient/i.test(m))return 'Saldo insuficiente para completar la operación.';
+  return m;
 }
-async function doRelease(){
-  const id=$('rId').value.trim();if(!id){showMsg('Indica el ID.','err');return;}
-  try{showMsg('Liberando al comprador…','info');const c=await escrow();const tx=await c.release(id).send();
-    showMsg('✓ USDT liberado al comprador. Tx: '+String(tx).slice(0,10)+'…','ok');}
-  catch(e){showMsg('Fallido: '+(e.message||e),'err');}
+
+/* Lee el estado de un trade (1=FUNDED, 2=PAID, 3=RELEASED, 4=REFUNDED). */
+async function readState(id){
+  const r=await tw.transactionBuilder.triggerConstantContract(
+    tw.address.toHex(ESCROW_ADDRESS),'getTrade(uint256)',{},
+    [{type:'uint256',value:Number(id)}]);
+  return parseInt(r.constant_result[0].slice(-2),16);
 }
-async function doRefund(){
-  const id=$('rId').value.trim();if(!id){showMsg('Indica el ID.','err');return;}
-  try{showMsg('Reembolsando al vendedor…','info');const c=await escrow();const tx=await c.refund(id).send();
-    showMsg('✓ USDT reembolsado al vendedor. Tx: '+String(tx).slice(0,10)+'…','ok');}
-  catch(e){showMsg('Fallido: '+(e.message||e),'err');}
+/* Espera a que el trade alcance el estado esperado — más fiable que el receipt. */
+async function waitForState(id,expected,onTick){
+  for(let i=0;i<30;i++){
+    try{ if(await readState(id)===expected)return true; }catch(e){}
+    if(onTick)onTick(i);
+    await new Promise(r=>setTimeout(r,3000));
+  }
+  return false;
 }
+
+async function doAction(kind){
+  const cfg={
+    paid:{id:'pId',fn:'markPaid',state:2,label:'marcar como pagado',ok:'✓ Marcado como pagado.'},
+    release:{id:'rId',fn:'release',state:3,label:'liberar',ok:'✓ USDT liberado al comprador (comisión 0,5% aplicada).'},
+    refund:{id:'rId',fn:'refund',state:4,label:'reembolsar',ok:'✓ USDT reembolsado al vendedor (sin comisión).'}
+  }[kind];
+  const id=$(cfg.id).value.trim();
+  if(!id){showMsg('Indica el ID del trade.','err');return;}
+  try{
+    showMsg('Firma en tu wallet para '+cfg.label+'…','info');
+    const c=await escrow();
+    await c[cfg.fn](id).send({feeLimit:150000000});
+    showMsg('Confirmando en la red…','info');
+    const ok=await waitForState(id,cfg.state,i=>{
+      showMsg('Confirmando en la red… ('+((i+1)*3)+'s)','info');
+    });
+    if(!ok)throw new Error('No se confirmó a tiempo. Consulta el trade en unos segundos para ver su estado.');
+    showMsg(cfg.ok,'ok');
+    showBalance();
+    viewTrade();
+  }catch(e){showMsg('✗ '+friendlyError(e),'err');}
+}
+function markPaid(){doAction('paid');}
+function doRelease(){doAction('release');}
+function doRefund(){doAction('refund');}
 
 async function viewTrade(){
   const id=$('lookupId').value.trim();const tvEl=$('tradeView');
   if(!id){showMsg('Indica el ID.','err');return;}
   if(!ESCROW_ADDRESS){showMsg('Contrato no configurado.','err');return;}
-  if(!tw){showMsg('Conecta TronLink para consultar.','err');return;}
+  if(!tw){showMsg('Conecta tu wallet para consultar.','err');return;}
   try{
     const c=await escrow();const t=await c.getTrade(id).call();
     const state=STATES[Number(t.state||t[5])]||'NONE';
@@ -340,7 +530,10 @@ async function viewTrade(){
   }catch(e){showMsg('No se pudo consultar: '+(e.message||e),'err');}
 }
 
-if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58){connectWallet();}
+CFG.paintNetworkUI(null);
+/* El faucet solo existe en redes de prueba: el USDT real no tiene mint. */
+(function(){const fb=$('btnFaucet');if(fb&&CFG.net.faucet)fb.style.display='block';})();
+DexWallet.reconnect().then(w=>{if(w){tw=w.tronWeb;account=w.address;$('walletBtn').textContent=account.slice(0,5)+'…'+account.slice(-4);$('walletBtn').classList.add('on');enableActions();showBalance();checkNetwork();}});
 
 /* ---- Contexto de oferta (deep-link desde el tablero P2P) ---- */
 function escHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -361,5 +554,7 @@ function escHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt
   if(max)document.getElementById('cAmount').value=max;
 })();
 </script>
+<script src="/cookies.js"></script>
+<script src="/pwa.js"></script>
 </body>
 </html>

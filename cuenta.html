@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DexCuba — Mi cuenta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A1018; --panel:#101826; --panel2:#16202F; --line:#243247;
+  --text:#EAF0F6; --muted:#8A99AD; --accent:#1FC7B6; --accent-deep:#0E9C8D;
+  --flag-red:#D3273E; --up:#2EBD85; --down:#F6465D; --warn:#E8B341; --gold:#F0C24B;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+select{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14px;width:100%}
+select option{background:#16202F;color:#EAF0F6}
+select:focus{outline:none;border-color:var(--accent)}
+input,textarea{font-family:inherit;color:var(--text)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.topbar{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,16,24,.94);backdrop-filter:blur(8px);z-index:50}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.02em;transition:opacity .15s}
+.logo-mark{width:30px;height:30px;flex:none;display:block}
+.logo-mark svg{width:100%;height:100%;display:block}
+.logo:hover{opacity:.82}
+.logo .cu{color:var(--accent)}
+.topnav{display:flex;gap:4px;margin-left:8px}
+.topnav a{padding:8px 13px;border-radius:8px;color:var(--muted);font-size:14px;font-weight:500}
+.topnav a:hover{color:var(--text);background:var(--panel2)}
+.topnav a.active{color:var(--accent)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.wallet-btn{padding:9px 18px;border-radius:10px;font-weight:700;font-size:13.5px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C;transition:filter .12s}
+.wallet-btn:hover{filter:brightness(1.08)}
+.wallet-btn.on{background:var(--panel2);border:1px solid var(--accent);color:var(--accent);font-weight:600}
+
+.wrap{max-width:940px;margin:0 auto;padding:24px 20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:18px}
+.card h2{font-family:var(--display);font-size:16px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card .desc{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+
+/* Login */
+.login-hero{text-align:center;padding:38px 20px}
+.login-hero .ic{font-size:40px;display:block;margin-bottom:12px}
+.login-hero h1{font-family:var(--display);font-size:22px;margin-bottom:8px}
+.login-hero p{color:var(--muted);font-size:13.5px;max-width:440px;margin:0 auto 20px;line-height:1.6}
+.login-hero .btn{max-width:280px;margin:0 auto}
+.nokyc{display:inline-flex;align-items:center;gap:7px;background:rgba(46,189,133,.1);border:1px solid rgba(46,189,133,.3);color:var(--up);border-radius:999px;padding:5px 14px;font-size:12px;margin-bottom:18px}
+
+/* Perfil */
+.prof-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.avatar{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:19px;color:#05201C;flex:none}
+.avatar.vip{background:linear-gradient(135deg,var(--gold),#C99A2E);color:#241a00}
+.prof-info{flex:1;min-width:0}
+.prof-info b{font-family:var(--display);font-size:17px;display:block}
+.prof-info span{font-family:var(--mono);font-size:11.5px;color:var(--muted);word-break:break-all}
+.vip-badge{background:linear-gradient(135deg,var(--gold),#C99A2E);color:#241a00;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.03em}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.stat b{display:block;font-family:var(--display);font-size:20px;color:var(--accent)}
+.stat span{font-size:11px;color:var(--muted)}
+.stars{color:var(--gold);font-size:15px;letter-spacing:1px}
+
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.field input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14px}
+.field input:focus{outline:none;border-color:var(--accent)}
+.field .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+.btn{padding:11px 18px;border-radius:10px;font-weight:600;font-size:14px;width:100%;transition:filter .12s}
+.btn-accent{background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#05201C}
+.btn-accent:hover{filter:brightness(1.08)}
+.btn-accent:disabled{opacity:.45;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#C99A2E);color:#241a00}
+.btn-gold:hover{filter:brightness(1.08)}
+.btn-ghost{border:1px solid var(--line);background:var(--panel2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+/* VIP */
+.vip-card{background:linear-gradient(160deg,#1D1A0E,#141821);border:1px solid rgba(240,194,75,.3)}
+.vip-price{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
+.vip-price b{font-family:var(--display);font-size:32px;color:var(--gold)}
+.vip-price span{color:var(--muted);font-size:13px}
+.vip-benefits{list-style:none;margin-bottom:16px}
+.vip-benefits li{font-size:13px;padding:5px 0;color:var(--muted);display:flex;gap:9px}
+.vip-benefits li::before{content:"✓";color:var(--gold);font-weight:700;flex:none}
+.vip-active{background:rgba(240,194,75,.1);border:1px solid rgba(240,194,75,.35);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--gold);text-align:center}
+
+/* Reseñas */
+.review{padding:11px 0;border-bottom:1px solid rgba(36,50,71,.5)}
+.review:last-child{border-bottom:none}
+.rv-top{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.rv-top .who{font-family:var(--mono);font-size:11.5px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rv-top .when{font-size:11px;color:var(--muted);flex:none}
+.review p{font-size:13px;color:var(--text)}
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 10px}
+
+.msg{display:none;font-size:13px;padding:10px 12px;border-radius:9px;margin-top:11px;text-align:center}
+.msg.show{display:block}
+.msg.ok{background:rgba(46,189,133,.12);color:var(--up)}
+.msg.err{background:rgba(246,70,93,.12);color:var(--down)}
+.msg.inf{background:var(--panel2);color:var(--muted)}
+
+.pay-box{background:var(--panel2);border:1px dashed rgba(240,194,75,.4);border-radius:10px;padding:12px;margin:12px 0;font-size:12px}
+.pay-box code{font-family:var(--mono);color:var(--gold);word-break:break-all;display:block;margin-top:5px}
+.foot{max-width:940px;margin:0 auto;padding:10px 20px 34px;color:var(--muted);font-size:11.5px;text-align:center}
+</style>
+<meta property="og:title" content="DexCuba">
+<meta property="og:description" content="Mercado P2P de USDT por CUP con escrow. Sin custodia.">
+<meta property="og:image" content="/icon-512.png">
+<meta property="og:url" content="https://dexcuba.com">
+<meta property="og:type" content="website">
+<meta name="application-name" content="DexCuba">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0A1018">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DexCuba">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/mobile.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="logo" href="/" aria-label="DexCuba — ir al inicio"><span class="logo-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><rect x="0" y="0" width="120" height="120" rx="26" fill="#D3273E"/><circle cx="60" cy="60" r="42" fill="none" stroke="#fff" stroke-width="4" opacity=".35"/><path d="M60 24 L70 50 L98 50 L75 66 L84 93 L60 76 L36 93 L45 66 L22 50 L50 50 Z" fill="#fff"/><circle cx="60" cy="60" r="9" fill="#1FC7B6"/></svg></span>Dex<span class="cu">Cuba</span></a>
+  <nav class="topnav">
+    <a href="/" data-short="Inicio">Panel</a>
+    <a href="/convertir.html" data-short="Convertir">Convertir</a>
+    <a href="/cobrar.html" data-short="Cobrar">Cobrar</a>
+    <a href="/p2p.html" data-short="P2P">Mercado P2P</a>
+    <a href="/escrow.html" data-short="Escrow">Escrow</a>
+    <a href="/cuenta.html" class="active" data-short="Cuenta">Mi cuenta</a>
+  </nav>
+  <div class="topbar-right">
+    <button class="wallet-btn" id="walletBtn" onclick="login()">Entrar con mi wallet</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ====== NO AUTENTICADO ====== -->
+  <div id="loggedOut">
+    <div class="card">
+      <div class="login-hero">
+        <span class="ic">🔑</span>
+        <div class="nokyc">🛡️ Sin documentos · sin KYC · sin contraseñas</div>
+        <h1>Entra con tu wallet</h1>
+        <p>Tu cuenta en DexCuba es tu propia wallet. Firmas un mensaje con tu wallet
+        para demostrar que es tuya — la firma es gratis y no autoriza ningún pago.
+        No pedimos documentos de identidad ni datos personales.</p>
+        <button class="btn btn-accent" onclick="login()">Entrar con mi wallet</button>
+        <div class="msg" id="loginMsg"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>¿Para qué sirve la cuenta?</h2>
+        <ul class="vip-benefits">
+          <li>Construir tu reputación con cada operación</li>
+          <li>Recibir valoraciones de quienes operan contigo</li>
+          <li>Que otros vean tu historial antes de negociar</li>
+          <li>Gestionar tus ofertas del mercado P2P</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Tu privacidad</h2>
+        <p class="desc" style="margin:0">Solo guardamos tu dirección pública de TRON, un alias
+        si quieres ponerlo, y las valoraciones que recibes. No hay contraseñas que
+        se puedan filtrar, ni documentos, ni datos bancarios. Tu wallet siempre la
+        controlas tú.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== AUTENTICADO ====== -->
+  <div id="loggedIn" style="display:none">
+    <div class="grid2">
+      <div>
+        <!-- Perfil -->
+        <div class="card">
+          <div class="prof-head">
+            <div class="avatar" id="avatar">?</div>
+            <div class="prof-info">
+              <b id="pAlias">Sin alias</b>
+              <span id="pAddr">—</span>
+            </div>
+            <span class="vip-badge" id="pVip" style="display:none">VIP</span>
+          </div>
+          <div class="stats">
+            <div class="stat"><b id="sTrades">0</b><span>operaciones</span></div>
+            <div class="stat"><b id="sRating">—</b><span>valoración</span></div>
+            <div class="stat"><b id="sSince">—</b><span>miembro desde</span></div>
+          </div>
+          <div class="stars" id="sStars" style="text-align:center;margin-bottom:10px"></div>
+        </div>
+
+        <!-- Editar -->
+        <div class="card">
+          <h2>Editar perfil</h2>
+          <div class="field">
+            <label for="fAlias">Alias público</label>
+            <input id="fAlias" maxlength="24" placeholder="Cómo te verán los demás">
+            <div class="hint">Opcional. Si lo dejas vacío se mostrará tu dirección.</div>
+          </div>
+          <div class="field">
+            <label for="fContact">Contacto (Telegram o WhatsApp)</label>
+            <input id="fContact" maxlength="60" placeholder="@usuario o +53…">
+            <div class="hint">Solo visible para quien opere contigo.</div>
+          </div>
+          <button class="btn btn-accent" onclick="saveProfile()">Guardar cambios</button>
+          <a class="btn btn-ghost" href="/cobrar.html" style="display:block;text-align:center;margin-top:8px">🧾 Crear un enlace de cobro</a>
+          <div class="msg" id="profMsg"></div>
+        </div>
+      </div>
+
+      <div>
+        <!-- VIP -->
+        <div class="card vip-card">
+          <h2>DexCuba VIP</h2>
+          <div id="vipInactive">
+            <div class="vip-price"><b>5 USDT</b><span>/ año</span></div>
+            <ul class="vip-benefits" id="vipBenefits"></ul>
+            <div class="pay-box" id="payBox">
+              Envía <b>5 USDT (TRC-20)</b> a esta dirección desde tu wallet:
+              <code id="vipWallet">—</code>
+            </div>
+            <button class="btn btn-gold" onclick="payVip(5)">Pagar VIP · 5 USDT/año</button>
+            <div class="field" style="margin-top:12px">
+              <label for="fTxid">¿Ya pagaste? Pega el hash de la transacción</label>
+              <input id="fTxid" placeholder="64 caracteres" style="font-family:var(--mono);font-size:12px">
+            </div>
+            <button class="btn btn-ghost" onclick="claimVip()">Validar mi pago</button>
+            <div style="border-top:1px solid rgba(240,194,75,.25);margin:16px 0 12px"></div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+              <b style="font-family:var(--display);font-size:22px;color:var(--gold)">Business</b>
+              <span style="color:var(--muted);font-size:13px">20 USDT / año · para negocios</span>
+            </div>
+            <ul class="vip-benefits" id="bizBenefits"></ul>
+            <button class="btn btn-gold" onclick="payVip(20)">Pagar Business · 20 USDT/año</button>
+          </div>
+          <div id="vipActive" style="display:none">
+            <div class="vip-active">
+              ⭐ <b>Suscripción VIP activa</b><br>
+              <span id="vipUntil"></span>
+            </div>
+            <button class="btn btn-gold" style="margin-top:12px" onclick="payVip(5)">Renovar VIP · 5 USDT</button>
+          </div>
+          <div class="msg" id="vipMsg"></div>
+        </div>
+
+        <!-- Cobros -->
+        <div class="card">
+          <h2>Mis enlaces de cobro <a href="/cobrar.html" style="font-size:12px;color:var(--accent);font-weight:500">+ nuevo</a></h2>
+          <div id="paysList"><div class="empty">Sin cobros todavía.<br><a href="/cobrar.html" style="color:var(--accent)">Crea tu primer enlace</a> y compártelo por WhatsApp.</div></div>
+        </div>
+
+        <!-- Reseñas -->
+        <div class="card">
+          <h2>Valoraciones recibidas <span class="desc" style="margin:0" id="rvCount"></span></h2>
+          <div id="reviews"><div class="empty">Aún no tienes valoraciones.<br>Se acumulan al operar con otros usuarios.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="foot">DexCuba · tu cuenta es tu wallet · no recolectamos documentos de identidad.<br><a href="/legal.html#terminos" style="color:var(--muted);text-decoration:underline">Términos</a> · <a href="/legal.html#privacidad" style="color:var(--muted);text-decoration:underline">Privacidad</a> · <a href="/legal.html#cookies" style="color:var(--muted);text-decoration:underline">Cookies</a> · <a href="/legal.html#riesgos" style="color:var(--muted);text-decoration:underline">Riesgos</a></footer>
+
+<script>
+const API='/api';
+let tw=null, account=null, token=localStorage_get('dx_token'), me=null;
+
+/* localStorage puede estar bloqueado; degradamos con elegancia */
+function localStorage_get(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function localStorage_set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function localStorage_del(k){try{localStorage.removeItem(k)}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function msg(el,t,cls){const m=$(el);m.textContent=t;m.className='msg show '+(cls||'inf');}
+function clear(el){$(el).className='msg';}
+
+/* ===== Login por firma ===== */
+async function login(){
+  const w=await DexWallet.connect();
+  if(!w){msg('loginMsg','No se pudo conectar. Instala o desbloquea tu wallet TRON.','err');return;}
+  tw=w.tronWeb; account=w.address;
+  try{
+    msg('loginMsg','Pidiendo código de acceso…','inf');
+    const r=await fetch(API+'/auth?address='+account);
+    const d=await r.json();
+    if(d.error){msg('loginMsg',errText(d.error),'err');return;}
+    msg('loginMsg','Firma el mensaje en tu wallet (es gratis)…','inf');
+    let signature;
+    try{ signature=await tw.trx.signMessageV2(d.message); }
+    catch(e){msg('loginMsg','Firma cancelada.','err');return;}
+    const r2=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({address:account,signature,nonce:d.nonce})});
+    const d2=await r2.json();
+    if(d2.error){msg('loginMsg',errText(d2.error),'err');return;}
+    token=d2.token; localStorage_set('dx_token',token);
+    me=d2.user; renderProfile(); loadVip(); loadReviews(); loadPays();
+    clear('loginMsg');
+  }catch(e){msg('loginMsg','Error: '+(e.message||e),'err');}
+}
+function logout(){
+  token=null;me=null;localStorage_del('dx_token');
+  $('loggedIn').style.display='none';$('loggedOut').style.display='block';
+  $('walletBtn').textContent='Entrar con mi wallet';$('walletBtn').classList.remove('on');
+  $('walletBtn').onclick=login;
+}
+
+/* ===== Perfil ===== */
+async function loadMe(){
+  if(!token)return;
+  try{
+    const r=await fetch(API+'/profile',{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    if(d.error){logout();return;}
+    me=d.user; renderProfile(); renderReviews(d.reviews); loadVip(); loadPays();
+  }catch(e){}
+}
+function renderProfile(){
+  if(!me)return;
+  $('loggedOut').style.display='none';$('loggedIn').style.display='block';
+  const short=me.address.slice(0,5)+'…'+me.address.slice(-4);
+  $('walletBtn').textContent=short;$('walletBtn').classList.add('on');
+  $('walletBtn').onclick=logout;$('walletBtn').title='Pulsa para salir';
+  $('pAlias').textContent=me.alias||'Sin alias';
+  $('pAddr').textContent=me.address;
+  $('avatar').textContent=(me.alias||me.address.slice(1,3)).slice(0,2).toUpperCase();
+  $('avatar').className='avatar'+(me.vip?' vip':'');
+  $('pVip').style.display=me.vip?'inline-block':'none';
+  $('sTrades').textContent=me.trades_ok||0;
+  $('sRating').textContent=me.rating?me.rating.toFixed(1):'—';
+  $('sSince').textContent=me.joined_at?new Date(me.joined_at).toLocaleDateString('es-ES',{month:'short',year:'numeric'}):'—';
+  $('sStars').textContent=me.rating?'★'.repeat(Math.round(me.rating))+'☆'.repeat(5-Math.round(me.rating)):'';
+  $('fAlias').value=me.alias||'';
+  $('fContact').value=me.contact||'';
+  $('rvCount').textContent=me.reviews_count?me.reviews_count+' valoraciones':'';
+}
+async function saveProfile(){
+  if(!token)return;
+  try{
+    msg('profMsg','Guardando…','inf');
+    const r=await fetch(API+'/profile',{method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+      body:JSON.stringify({alias:$('fAlias').value,contact:$('fContact').value})});
+    const d=await r.json();
+    if(d.error){msg('profMsg',errText(d.error),'err');return;}
+    me=d.user;renderProfile();msg('profMsg','✓ Perfil actualizado','ok');
+  }catch(e){msg('profMsg','Error al guardar','err');}
+}
+
+/* ===== Reseñas ===== */
+async function loadPays(){
+  if(!token)return;
+  try{
+    const r=await fetch('/api/pay?list=1',{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    if(!d.pays)return;
+    const el=$('paysList');
+    if(!d.pays.length)return;
+    el.innerHTML=d.pays.slice(0,15).map(p=>{
+      const paid=p.status==='pagado';
+      const url=location.origin+'/pagar.html?id='+p.id;
+      return `<div class="review" style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:16px">${paid?'✅':'⏳'}</span>
+        <span style="flex:1;min-width:0">
+          <b style="font-size:13.5px">${p.amount} USDT</b>
+          <span style="font-size:11px;color:var(--muted)"> · ${p.network==='TRC20'?'TRC-20':'BEP-20'}</span>
+          ${p.concept?`<span style="display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.concept)}</span>`:''}
+        </span>
+        <span style="font-size:11px;color:${paid?'var(--up)':'var(--muted)'};flex:none">${paid?'PAGADO':'pendiente'}</span>
+        ${!paid?`<button class="mini-btn" style="border:1px solid var(--line);border-radius:7px;padding:5px 9px;font-size:11px;flex:none" onclick="navigator.clipboard&&navigator.clipboard.writeText('${url}')">Copiar</button>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){}
+}
+async function loadReviews(){
+  if(!token)return;
+  try{
+    const r=await fetch(API+'/profile',{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    if(d.reviews)renderReviews(d.reviews);
+  }catch(e){}
+}
+function renderReviews(list){
+  const el=$('reviews');
+  if(!list||!list.length){el.innerHTML='<div class="empty">Aún no tienes valoraciones.<br>Se acumulan al operar con otros usuarios.</div>';return;}
+  el.innerHTML=list.map(r=>`<div class="review">
+    <div class="rv-top">
+      <span class="stars">${'★'.repeat(r.score)}${'☆'.repeat(5-r.score)}</span>
+      <span class="who">${esc(r.from.slice(0,6))}…${esc(r.from.slice(-4))}</span>
+      <span class="when">${new Date(r.at).toLocaleDateString('es-ES')}</span>
+    </div>
+    ${r.comment?`<p>${esc(r.comment)}</p>`:''}
+  </div>`).join('');
+}
+
+/* ===== VIP ===== */
+let vipInfo=null;
+async function loadVip(){
+  if(!token)return;
+  try{
+    const r=await fetch(API+'/vip',{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    if(d.error){return;}
+    vipInfo=d;
+    $('vipBenefits').innerHTML=(d.benefits||[]).map(b=>`<li>${esc(b)}</li>`).join('');
+    $('vipWallet').textContent=d.pay_to||'(no configurado aún)';
+    if($('bizBenefits'))$('bizBenefits').innerHTML=(d.benefits_business||[]).map(b=>`<li>${esc(b)}</li>`).join('');
+    if(d.business){
+      $('vipInactive').style.display='none';$('vipActive').style.display='block';
+      $('vipUntil').innerHTML='<b>Plan Business</b> activo hasta '+new Date(d.business_until).toLocaleDateString('es-ES')+'<br><span style="font-size:11.5px">incluye todos los beneficios VIP · mostrador sin límites</span>';
+    }else if(d.vip){
+      $('vipInactive').style.display='none';$('vipActive').style.display='block';
+      $('vipUntil').textContent='Válida hasta '+new Date(d.vip_until).toLocaleDateString('es-ES');
+    }else{
+      $('vipInactive').style.display='block';$('vipActive').style.display='none';
+    }
+  }catch(e){}
+}
+async function payVip(price){
+  price=price||5;
+  if(!vipInfo||!vipInfo.pay_to||!vipInfo.token){
+    msg('vipMsg','El pago VIP aún no está configurado por el administrador.','err');return;
+  }
+  if(!tw){msg('vipMsg','Conecta tu wallet primero.','err');return;}
+  try{
+    msg('vipMsg','Firma el pago de '+price+' USDT en tu wallet…','inf');
+    const c=await tw.contract([
+      {"constant":false,"inputs":[{"name":"to","type":"address"},{"name":"value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"}
+    ],vipInfo.token);
+    const txid=await c.transfer(vipInfo.pay_to,String(price*1000000)).send({feeLimit:150000000});
+    $('fTxid').value=txid;
+    msg('vipMsg','Pago enviado. Validando en la red…','inf');
+    for(let i=0;i<20;i++){
+      await new Promise(r=>setTimeout(r,4000));
+      msg('vipMsg','Validando en la red… ('+((i+1)*4)+'s)','inf');
+      if(await tryClaim(txid,true))return;
+    }
+    msg('vipMsg','El pago se envió pero aún no se valida. Pulsa "Validar mi pago" en un momento.','err');
+  }catch(e){msg('vipMsg','Pago cancelado o fallido: '+(e.message||e),'err');}
+}
+async function claimVip(){
+  const txid=$('fTxid').value.trim();
+  if(!txid){msg('vipMsg','Pega el hash de la transacción.','err');return;}
+  msg('vipMsg','Validando…','inf');
+  if(!await tryClaim(txid,false))msg('vipMsg','No se pudo validar todavía. Espera unos segundos y reintenta.','err');
+}
+async function tryClaim(txid,silent){
+  try{
+    const r=await fetch(API+'/vip',{method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+      body:JSON.stringify({txid})});
+    const d=await r.json();
+    if(d.ok){
+      msg('vipMsg','⭐ ¡VIP activado hasta '+new Date(d.vip_until).toLocaleDateString('es-ES')+'!','ok');
+      loadVip();loadMe();return true;
+    }
+    if(!silent&&d.error)msg('vipMsg',errText(d.error),'err');
+    return false;
+  }catch(e){return false;}
+}
+
+/* ===== Utilidades ===== */
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function errText(code){
+  return ({
+    kv_no_configurado:'El sistema de cuentas aún no está activo. Falta crear el namespace KV "USERS" (ver README).',
+    vip_no_configurado:'El pago VIP aún no está configurado por el administrador.',
+    no_autenticado:'Tu sesión caducó. Vuelve a entrar.',
+    direccion_invalida:'Dirección de wallet inválida.',
+    nonce_invalido:'El código de acceso caducó. Reintenta.',
+    firma_invalida:'La firma no es válida.',
+    txid_invalido:'El hash de transacción no tiene el formato correcto.',
+    pago_ya_usado:'Ese pago ya se canjeó antes.',
+    tx_no_encontrada:'No se encuentra esa transacción en la red.',
+    tx_fallida:'La transacción falló en la red.',
+    importe_insuficiente:'El importe pagado es menor de 5 USDT.',
+    pago_de_otra_wallet:'El pago debe salir de la misma wallet con la que entraste.',
+    pago_no_encontrado_en_tx:'Esa transacción no contiene un pago de USDT a DexCuba.',
+    ya_valoraste:'Ya valoraste a este usuario por esa operación.',
+  })[code]||('Error: '+code);
+}
+
+/* ===== Init ===== */
+if(token)loadMe();
+DexWallet.reconnect().then(w=>{if(w){tw=w.tronWeb;account=w.address;}});
+</script>
+<script src="/cookies.js"></script>
+<script src="/wallet.js"></script>
+<script src="/pwa.js"></script>
+</body>
+</html>

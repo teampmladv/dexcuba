@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>DexCuba Admin — Suscripciones</title>
+<link rel="stylesheet" href="/mobile.css">
+<style>
+:root{--bg:#0B1220;--panel:#101A2C;--panel2:#16202F;--line:#243247;--text:#EAF0F6;--muted:#8DA0B8;--accent:#1FC7B6;--gold:#F0C24B;--up:#2EBD85;--mono:'IBM Plex Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;padding:20px}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:20px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat b{display:block;font-size:22px;font-family:var(--mono)}
+.stat span{font-size:11.5px;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{font-size:15px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--muted);font-weight:500;font-size:11px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid rgba(36,50,71,.5)}
+.mono{font-family:var(--mono);font-size:11px}
+.tag{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700}
+.tag.vip{background:rgba(240,194,75,.15);color:var(--gold)}
+.tag.biz{background:linear-gradient(135deg,#F0C24B,#C99A2E);color:#241a00}
+a{color:var(--accent);text-decoration:none}
+.empty{color:var(--muted);font-size:12.5px;padding:10px 0}
+.back{display:inline-block;margin-bottom:14px;font-size:12.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/admin/sandbox.html">← Volver al sandbox</a>
+  <h1>Suscripciones</h1>
+  <p class="sub">Registro contable de pagos VIP y Business validados en la cadena. Solo visible para ti (Cloudflare Access).</p>
+
+  <div class="grid" id="stats"></div>
+
+  <div class="card">
+    <h2>⚠️ Caducan en los próximos 14 días</h2>
+    <div id="expiring"><div class="empty">Cargando…</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Registro de pagos</h2>
+    <div id="subs"><div class="empty">Cargando…</div></div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const short=a=>a?a.slice(0,7)+'…'+a.slice(-5):'';
+const fmt=d=>new Date(d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
+
+async function load(){
+  try{
+    const r=await fetch('/admin/subs');
+    const d=await r.json();
+    if(d.error){$('subs').innerHTML='<div class="empty">Error: '+esc(d.error)+'</div>';return;}
+
+    $('stats').innerHTML=`
+      <div class="stat"><b>${d.stats.total_usdt}</b><span>USDT ingresados</span></div>
+      <div class="stat"><b>${d.stats.pagos}</b><span>pagos validados</span></div>
+      <div class="stat"><b>${d.stats.activos_vip}</b><span>VIP activos</span></div>
+      <div class="stat"><b>${d.stats.activos_business}</b><span>Business activos</span></div>`;
+
+    $('expiring').innerHTML=d.expiring.length?('<table><tr><th>Cuenta</th><th>Plan</th><th>Caduca</th></tr>'+
+      d.expiring.map(e=>`<tr>
+        <td>${esc(e.alias)||'<span class="mono">'+short(e.address)+'</span>'}</td>
+        <td><span class="tag ${e.plan==='business'?'biz':'vip'}">${e.plan==='business'?'BUSINESS':'VIP'}</span></td>
+        <td>${fmt(e.until)}</td></tr>`).join('')+'</table>')
+      :'<div class="empty">Ninguna caducidad próxima.</div>';
+
+    $('subs').innerHTML=d.subs.length?('<table><tr><th>Fecha</th><th>Wallet</th><th>Plan</th><th>USDT</th><th>Válido hasta</th><th>Tx</th></tr>'+
+      d.subs.map(s=>`<tr>
+        <td>${fmt(s.at)}</td>
+        <td class="mono">${short(s.address)}</td>
+        <td><span class="tag ${s.plan==='business'?'biz':'vip'}">${s.plan==='business'?'BUSINESS':'VIP'}</span></td>
+        <td class="mono">${s.amount}</td>
+        <td>${fmt(s.until)}</td>
+        <td><a href="https://tronscan.org/#/transaction/${esc(s.txid)}" target="_blank" rel="noopener">ver</a></td></tr>`).join('')+'</table>')
+      :'<div class="empty">Aún no hay pagos registrados. El registro empieza a anotar desde este despliegue: los pagos anteriores no aparecen (sus planes siguen activos igualmente).</div>';
+  }catch(e){$('subs').innerHTML='<div class="empty">Error de red.</div>';}
+}
+load();
+</script>
+</body>
+</html>
