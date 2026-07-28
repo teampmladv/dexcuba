@@ -1,5 +1,14 @@
-node_modules/
-.wrangler/
+# Secretos: NUNCA al repositorio
+.env
+.env.*
+*.key
 .dev.vars
-*.log
+
+# Sistema y editores
 .DS_Store
+Thumbs.db
+*.swp
+
+# Cloudflare / despliegue
+.wrangler/
+node_modules/

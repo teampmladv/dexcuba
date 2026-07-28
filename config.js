@@ -26,8 +26,9 @@
       explorer: 'https://nile.tronscan.org',
       isTestnet: true,
       // Contratos desplegados en Nile
-      escrow: 'TYtu6XGF25LP69SvCRnAf4ABHoHpwyjWrM',
-      usdt: 'TUBZdB7GojTzAzbUC2bq856adzXawBa8KB', // MockUSDT (tiene mint)
+      escrow: 'TQEx3byyEVnRZjUjV13YWZRcAoVTSnt21P',
+      arbitrator: 'THjEBe4AhazZ2AzESeWbnrD2vRuTkrFgaZ', // árbitro de pruebas en Nile
+      usdt: 'THqLa2Mn79tySjQTGwgRYD5y7ca6ryMPZS', // MockUSDT (tiene mint)
       usdtDecimals: 6,
       faucet: true,   // permite darse USDT de prueba
       router: '',     // SunSwap no opera en Nile
@@ -40,8 +41,8 @@
       host: 'api.trongrid.io',
       explorer: 'https://tronscan.org',
       isTestnet: false,
-      // ⚠️ RELLENAR TRAS AUDITORÍA Y DESPLIEGUE EN MAINNET
-      escrow: '',
+      escrow: 'TUcZmJv5e9bnRJ7TGsY8LCK2QVMtiEDsva',
+      arbitrator: 'TJbjznR4eci4efanpRfhi3ARHXAVvEwrxH', // Ledger de DexCuba — árbitro oficial
       usdt: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', // USDT-TRC20 oficial
       usdtDecimals: 6,
       faucet: false,  // en mainnet no hay faucet: el USDT real no tiene mint
@@ -62,15 +63,16 @@
       rpc: 'https://bsc-testnet-rpc.publicnode.com',
       explorer: 'https://testnet.bscscan.com',
       isTestnet: true,
-      escrow: '',    // rellenar tras desplegar en testnet
-      usdt: '',      // MockUSDT de pruebas (18 decimales), rellenar tras desplegar
-      converter: '', // rellenar tras desplegar en testnet
+      escrow: '0xDfc9d2bE31339AED9BD2E3C5426EfeeF3C25f8F4',
+      usdt: '0x6414f8E45D0b51277Df89570613A1B0ea81FEd60', // MockUSDT (mint abierto)
+      converter: '0xACDbd6BC6298A53E67Cf57B4396918821a679772',
+      arbitrator: '0xe7024D982a9d71381473f7AFf54DA5655bc380B0', // árbitro de pruebas
       router: '0xD99D1c33F9fC3444f8101754aBC46c52416550D1',  // PancakeSwap testnet
       wbnb: '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',    // WBNB testnet
       // En testnet solo hay liquidez fiable para el par de prueba
       tokens: [
         { sym: 'BNB',  name: 'BNB',              addr: 'BNB', dec: 18 },
-        { sym: 'USDT', name: 'USDT de prueba',   addr: '',    dec: 18 }  // MockUSDT: rellenar al desplegar
+        { sym: 'USDT', name: 'USDT de prueba',   addr: '0x6414f8E45D0b51277Df89570613A1B0ea81FEd60', dec: 18 }
       ],
       usdtDecimals: 18,
       faucet: true,
@@ -85,9 +87,10 @@
       rpc: 'https://bsc-dataseed.binance.org',
       explorer: 'https://bscscan.com',
       isTestnet: false,
-      escrow: '',    // ⚠️ rellenar tras desplegar el escrow en BSC
+      escrow: '0xFb3005e639173Fbf95c1A3076E748ab48B9d7b59',
       usdt: '0x55d398326f99059fF775485246999027B3197955', // USDT BEP-20 oficial (BSC-USD)
-      converter: '', // ⚠️ rellenar tras desplegar el convertidor en BSC
+      converter: '0xa5db8AC2B2dd01a83b6592e2C5328A4E2c7F5961',
+      arbitrator: '0xbdF00EAe0F9Be4FeE80A58Cac297F8eafe7a2b2f', // Ledger de DexCuba — árbitro oficial
       router: '0x10ED43C718714eb63d5aA57B78B54704E256024E', // PancakeSwap V2 — verificar en docs/BscScan
       wbnb: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',   // WBNB oficial
       // ⚠️ Verificar cada dirección en bscscan.com antes de mainnet.

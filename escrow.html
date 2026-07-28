@@ -178,7 +178,7 @@ a{color:inherit;text-decoration:none}
     <div class="col">
       <div class="card">
         <h2>Bloquear USDT <span class="role">Vendedor</span></h2>
-        <p class="desc">Depositas el USDT en el contrato. Primero se aprueba el gasto y luego se crea el trade. Guarda el ID que aparecerá.</p>
+        <p class="desc">Depositas el USDT en el contrato. Primero se aprueba el gasto y luego se crea el trade. Guarda el ID que aparecerá.<br><span style="font-size:11.5px;color:var(--muted)">Aviso: el comprador necesitará algo de TRX en su wallet para poder firmar su parte (en TRON, las cuentas nuevas se activan al recibir TRX).</span></p>
         <div class="field">
           <label>Dirección del comprador (TRON)</label>
           <input id="cBuyer" placeholder="T...">
@@ -260,7 +260,17 @@ const USDT_DECIMALS  = CFG.USDT_DECIMALS;
 const FEE_BPS        = CFG.FEE_BPS;
 const FEE_LIMIT      = CFG.FEE_LIMIT;
 
-function checkNetwork(){ CFG.paintNetworkUI(tw); }
+function checkNetwork(){ // Árbitro oficial de DexCuba pre-rellenado (editable si las partes pactan otro)
+(function(){
+  const a=document.getElementById('cArb');
+  if(a&&!a.value&&CFG.net&&CFG.net.arbitrator){
+    a.value=CFG.net.arbitrator;
+    a.title='Árbitro oficial de DexCuba. Puedes cambiarlo si ambas partes acuerdan otro.';
+  }
+})();
+restoreTradeId();
+if(applyUrlTradeId())setTimeout(()=>{try{viewTrade();}catch(e){}},600);
+CFG.paintNetworkUI(tw); }
 
 const ESCROW_ABI = [
   {"inputs":[{"name":"buyer","type":"address"},{"name":"arbitrator","type":"address"},{"name":"amount","type":"uint256"}],"name":"createTrade","outputs":[{"name":"id","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},
@@ -276,10 +286,15 @@ const TRC20_ABI=[
   {"constant":false,"inputs":[{"name":"to","type":"address"},{"name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"}
 ];
 const STATES=['NONE','FUNDED','PAID','RELEASED','REFUNDED'];
+// Etiquetas visibles (el código de arriba se usa en la lógica y en las clases CSS)
+const STATE_ES={NONE:'—',FUNDED:'Fondos bloqueados',PAID:'CUP pagado · pendiente de liberar',RELEASED:'Liberado al comprador',REFUNDED:'Reembolsado al vendedor'};
 
 let account=null, tw=null;
 const $=id=>document.getElementById(id);
 function showMsg(t,c){const m=$('msg');m.textContent=t;m.className='msg show '+c;}
+/* Solo para mensajes compuestos por nosotros (enlaces, negritas). Nunca se
+   usa con texto que venga de la cadena o del usuario: ese va en showMsg. */
+function showMsgHtml(t,c){const m=$('msg');m.innerHTML=t;m.className='msg show '+(c||'info');}
 function clearMsg(){$('msg').className='msg';}
 function toUnits(v){return BigInt(Math.round(Number(v)*10**USDT_DECIMALS));}
 
@@ -358,8 +373,21 @@ async function readNextId(){
   return parseInt(r.constant_result[0],16);
 }
 /* Espera activa a que el allowance alcance el mínimo requerido. */
+/* Compara el nodo al que apunta la wallet con el de la página.
+   Devuelve true/false, o null si no se puede determinar (no bloqueamos por duda). */
+async function sameNetwork(){
+  try{
+    const host=(tw&&tw.fullNode&&(tw.fullNode.host||tw.fullNode.url))||'';
+    if(!host)return null;
+    const mine=String(CFG.net.host||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
+    const theirs=String(host).replace(/^https?:\/\//,'').replace(/\/$/,'');
+    if(!mine||!theirs)return null;
+    return theirs.includes(mine)||mine.includes(theirs);
+  }catch(e){return null;}
+}
+
 async function waitForAllowance(min,onTick){
-  for(let i=0;i<25;i++){
+  for(let i=0;i<40;i++){
     try{ if(await readAllowance()>=min)return true; }catch(e){}
     if(onTick)onTick(i);
     await new Promise(r=>setTimeout(r,3000));
@@ -412,6 +440,15 @@ async function createTrade(){
       }
     }catch(e){}
 
+    // 1.5) La wallet debe estar en la MISMA red que la página. Si TronLink está
+    // en mainnet y la página en Nile (o al revés), el approve se firma en otra
+    // cadena y el permiso nunca aparece aquí: el error clásico difícil de ver.
+    const netOk=await sameNetwork();
+    if(netOk===false){
+      showMsgHtml('Tu wallet está en otra red. Cambia TronLink a <b>'+CFG.net.name+'</b> y recarga la página.','err');
+      btn.disabled=false;return;
+    }
+
     // 2) Saldo suficiente (evita gastar gas en una tx condenada)
     showMsg('Comprobando tu saldo…','info');
     const bal=await usdtBalance();
@@ -431,7 +468,12 @@ async function createTrade(){
       const ok=await waitForAllowance(units,i=>{
         showMsg('2/3 · Esperando a que la red registre el permiso… ('+((i+1)*3)+'s)','info');
       });
-      if(!ok)throw new Error('El permiso no se registró a tiempo. Vuelve a intentarlo en unos segundos (no hace falta repetir el approve si ya se confirmó).');
+      if(!ok){
+        throw new Error('El permiso no aparece tras 2 minutos. Revisa esta transacción en '
+          +CFG.net.explorer+'/#/transaction/'+txA
+          +' — si figura como fallida suele ser falta de energía/TRX; si no aparece, tu wallet podría estar en otra red. '
+          +'No repitas el approve si ya se confirmó: vuelve a pulsar y el sistema lo detectará.');
+      }
     }else{
       showMsg('Permiso ya concedido, creando el trade…','info');
     }
@@ -446,7 +488,8 @@ async function createTrade(){
     });
 
     const nid=await readNextId();
-    showMsg('✓ USDT bloqueado. El ID de tu trade es '+(nid-1)+' — anótalo.','ok');
+    showMsgHtml('✓ USDT bloqueado. El ID de tu trade es <b>'+(nid-1)+'</b>.'+tradeShareHtml(nid-1),'ok');
+    try{setTradeId(String(nid-1));}catch(e){}
     $('rId').value=String(nid-1);
     $('pId').value=String(nid-1);
     $('lookupId').value=String(nid-1);
@@ -457,6 +500,15 @@ async function createTrade(){
 
 /* Traduce errores técnicos a algo accionable para el usuario. */
 function friendlyError(e){
+  const raw=(e&&(e.message||e))+'';
+  if(/does not exist/i.test(raw)){
+    return 'Esa cuenta todavía no está activada en TRON. Las direcciones nuevas '
+      +'no existen en la cadena hasta que reciben TRX por primera vez: envíale '
+      +'unos pocos TRX y vuelve a intentarlo.';
+  }
+  if(/energy|bandwidth/i.test(raw)){
+    return 'Falta energía o ancho de banda. Ten algo de TRX en la cuenta que firma.';
+  }
   const m=(e&&e.message)||String(e);
   if(/expired/i.test(m))return 'La firma tardó demasiado y caducó. Vuelve a intentarlo y confirma en tu wallet sin demora.';
   if(/rejected|denied|cancel/i.test(m))return 'Cancelaste la operación en tu wallet.';
@@ -488,8 +540,9 @@ async function doAction(kind){
     release:{id:'rId',fn:'release',state:3,label:'liberar',ok:'✓ USDT liberado al comprador (comisión 0,5% aplicada).'},
     refund:{id:'rId',fn:'refund',state:4,label:'reembolsar',ok:'✓ USDT reembolsado al vendedor (sin comisión).'}
   }[kind];
-  const id=$(cfg.id).value.trim();
-  if(!id){showMsg('Indica el ID del trade.','err');return;}
+  const id=anyTradeId(cfg.id);
+  if(!id){showMsg('Escribe el número de trade (te lo dimos al bloquear el USDT).','err');return;}
+  setTradeId(id);
   try{
     showMsg('Firma en tu wallet para '+cfg.label+'…','info');
     const c=await escrow();
@@ -508,9 +561,61 @@ function markPaid(){doAction('paid');}
 function doRelease(){doAction('release');}
 function doRefund(){doAction('refund');}
 
+
+/* Un solo ID para las tres tarjetas: al crear o consultar un trade, se rellena
+   en todas. Evita el clásico "escribo en un campo y pulso el botón de otro". */
+
+/* Toma el ID de la tarjeta usada o, si está vacía, de cualquiera de las otras:
+   el usuario no tiene por qué saber en qué casilla escribir. */
+function anyTradeId(preferred){
+  const ids=[preferred,'lookupId','pId','rId'];
+  for(const k of ids){
+    const e=k&&document.getElementById(k);
+    const v=e&&e.value&&e.value.trim();
+    if(v)return v;
+  }
+  return '';
+}
+
+/* Enlace del trade para el comprador: lleva el ID dentro, así no hay que
+   dictar números por WhatsApp (un dígito mal copiado y se marca el trade
+   equivocado). Al abrirlo, el ID queda puesto en las tres tarjetas. */
+function tradeUrl(id){
+  const net=(CFG.net&&CFG.net.isTestnet)?('&net='+CFG.net.id):'';
+  return location.origin+location.pathname+'?id='+id+net;
+}
+function copyTradeLink(id){
+  const u=tradeUrl(id);
+  if(navigator.clipboard)navigator.clipboard.writeText(u);
+  return false;
+}
+function tradeShareHtml(id){
+  const u=tradeUrl(id);
+  const t=encodeURIComponent('Trade '+id+' en DexCuba. Abre este enlace para ver el estado y marcar tu pago: '+u);
+  return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:12.5px">'
+    +'<b>Envíale este enlace al comprador</b> — lleva el número dentro:<br>'
+    +'<code style="font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all">'+u+'</code><br>'
+    +'<a href="https://wa.me/?text='+t+'" target="_blank" rel="noopener" style="color:var(--accent)">WhatsApp</a> · '
+    +'<a href="https://t.me/share/url?url='+encodeURIComponent(u)+'" target="_blank" rel="noopener" style="color:var(--accent)">Telegram</a> · '
+    +'<a href="#" onclick="return copyTradeLink('+id+')" style="color:var(--accent)">Copiar</a></div>';
+}
+/* Si la URL trae ?id=, se rellena y se consulta solo: el comprador entra y ve su trade. */
+function applyUrlTradeId(){
+  const q=new URLSearchParams(location.search).get('id');
+  if(q&&/^\d+$/.test(q)){setTradeId(q);return true;}
+  return false;
+}
+function setTradeId(id){
+  ['lookupId','pId','rId'].forEach(k=>{const e=document.getElementById(k);if(e)e.value=id;});
+  try{localStorage.setItem('dx_last_trade',String(id));}catch(e){}
+}
+function restoreTradeId(){
+  try{const v=localStorage.getItem('dx_last_trade');if(v)setTradeId(v);}catch(e){}
+}
 async function viewTrade(){
-  const id=$('lookupId').value.trim();const tvEl=$('tradeView');
-  if(!id){showMsg('Indica el ID.','err');return;}
+  const id=anyTradeId('lookupId');const tvEl=$('tradeView');
+  if(!id){showMsg('Escribe el número de trade que quieres consultar.','err');return;}
+  setTradeId(id);
   if(!ESCROW_ADDRESS){showMsg('Contrato no configurado.','err');return;}
   if(!tw){showMsg('Conecta tu wallet para consultar.','err');return;}
   try{
@@ -521,7 +626,7 @@ async function viewTrade(){
     const b58=a=>tw.address.fromHex(a);
     tvEl.className='trade-view show';
     tvEl.innerHTML=`
-      <div class="tv-row"><span class="k">Estado</span><span class="state-badge state-${state}">${state}</span></div>
+      <div class="tv-row"><span class="k">Estado</span><span class="state-badge state-${state}">${STATE_ES[state]||state}</span></div>
       <div class="tv-row"><span class="k">Monto</span><span class="v">${amt} USDT</span></div>
       <div class="tv-row"><span class="k">Vendedor</span><span class="v">${b58(t.seller)}</span></div>
       <div class="tv-row"><span class="k">Comprador</span><span class="v">${b58(t.buyer)}</span></div>
@@ -556,5 +661,6 @@ function escHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt
 </script>
 <script src="/cookies.js"></script>
 <script src="/pwa.js"></script>
+<script src="/nav.js"></script>
 </body>
 </html>

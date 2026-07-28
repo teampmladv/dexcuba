@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>DexCuba Admin — Recomendaciones</title>
+<style>
+:root{--bg:#0B1220;--panel:#101A2C;--panel2:#16202F;--line:#243247;--text:#EAF0F6;--muted:#8DA0B8;--accent:#1FC7B6;--gold:#F0C24B;--up:#2EBD85;--down:#E2574C;--mono:'IBM Plex Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;padding:20px}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:20px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+.adm-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.adm-nav a{padding:7px 13px;border-radius:9px;border:1px solid var(--line);background:var(--panel);font-size:12.5px;color:var(--muted);text-decoration:none}
+.adm-nav a.on{border-color:var(--accent);color:var(--accent);background:rgba(31,199,182,.08)}
+.adm-nav a.site{margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat b{display:block;font-size:22px;font-family:var(--mono)}
+.stat span{font-size:11.5px;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{font-size:15px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--muted);font-weight:500;font-size:11px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid rgba(36,50,71,.5)}
+.mono{font-family:var(--mono);font-size:11px}
+.tag{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700}
+.tag.vip{background:rgba(240,194,75,.15);color:var(--gold)}
+.tag.biz{background:linear-gradient(135deg,#F0C24B,#C99A2E);color:#241a00}
+.tag.free{background:var(--panel2);color:var(--muted)}
+.tag.ok{background:rgba(46,189,133,.15);color:var(--up)}
+.tag.bad{background:rgba(226,87,76,.15);color:var(--down)}
+a{color:var(--accent);text-decoration:none}
+.empty{color:var(--muted);font-size:12.5px;padding:10px 0}
+.del{background:rgba(226,87,76,.12);color:var(--down);border:1px solid rgba(226,87,76,.3);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>DexCuba — Administración</h1>
+  <p class="sub">Protegido por Cloudflare Access · solo tu correo puede ver esto (páginas y APIs).</p>
+  <nav class="adm-nav">
+    <a href="/admin/index.html" >📊 Panel</a>
+    <a href="/admin/ofertas.html" >🛡️ Ofertas</a>
+    <a href="/admin/usuarios.html">👥 Usuarios</a>
+    <a href="/admin/referidos.html" style="padding:7px 13px;border-radius:9px;border:1px solid #1FC7B6;background:rgba(31,199,182,.08);font-size:12.5px;color:#1FC7B6;text-decoration:none">🎁 Referidos</a>
+    <a href="/admin/soporte.html" style="padding:7px 13px;border-radius:9px;border:1px solid #243247;background:#101A2C;font-size:12.5px;color:#8DA0B8;text-decoration:none">🎫 Soporte</a>
+    <a href="/admin/suscripciones.html" >📒 Suscripciones</a>
+    <a href="/admin/sandbox.html" >🧪 Sandbox</a>
+    <a href="/" class="site">← Volver al sitio</a>
+  </nav>
+
+  <div class="card">
+    <h2>Programa de recomendaciones <span id="tot" class="empty"></span></h2>
+    <p class="empty" style="margin-bottom:8px">Se acredita el 25% de cada suscripción que traiga un recomendado. Los pagos los haces tú y se registran aquí.</p>
+    <div id="list"><div class="empty">Cargando…</div></div>
+  </div>
+
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const short=a=>a?a.slice(0,8)+'…'+a.slice(-6):'—';
+let R=[];
+async function load(){
+  try{
+    const r=await fetch('/admin/refs');const d=await r.json();
+    R=d.recomendadores||[];
+    $('tot').textContent=d.total_pendiente?('· '+d.total_pendiente+' USDT por pagar'):'· sin pagos pendientes';
+    if(!R.length){$('list').innerHTML='<div class="empty">Todavía nadie ha traído recomendados.</div>';return;}
+    $('list').innerHTML='<table><tr><th>Recomendador</th><th>Wallet</th><th>Recomendados</th><th>Ganado</th><th>Pagado</th><th>Pendiente</th><th></th></tr>'+
+      R.map((x,i)=>`<tr>
+        <td>${esc(x.alias)||'<span class="empty">sin alias</span>'}</td>
+        <td class="mono">${short(x.address)}</td>
+        <td class="mono">${x.referidos}</td>
+        <td class="mono">${x.ganado}</td>
+        <td class="mono">${x.pagado}</td>
+        <td class="mono"><b style="color:${x.pendiente>0?'#1FC7B6':'#8DA0B8'}">${x.pendiente}</b></td>
+        <td>${x.pendiente>0?`<button class="del" style="border-color:rgba(31,199,182,.4);color:#1FC7B6;background:rgba(31,199,182,.1)" onclick="pagar(${i})">Marcar pagado</button>`:''}</td>
+      </tr>`).join('')+'</table>';
+  }catch(e){$('list').innerHTML='<div class="empty">Error: '+esc(e.message||e)+'</div>';}
+}
+async function pagar(i){
+  const x=R[i];
+  const txid=prompt('Hash de la transacción del pago de '+x.pendiente+' USDT a '+x.address+' (opcional):');
+  if(txid===null)return;
+  await fetch('/admin/refs',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({address:x.address,amount:x.pendiente,txid})});
+  load();
+}
+load();
+</script>
+</body>
+</html>

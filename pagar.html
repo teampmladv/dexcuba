@@ -202,6 +202,16 @@ const CFG=window.DEXCUBA;
 const $=id=>document.getElementById(id);
 function showMsg(t,c){const m=$('msg');m.innerHTML=t;m.className='msg show '+(c||'info');}
 let PAY=null;
+async function connectWallet(){
+  let got=null;
+  if(window.DexWallet){try{const w=await DexWallet.connect();if(w)got=w.address;}catch(e){}}
+  if(!got&&window.ethereum){try{const a=await window.ethereum.request({method:'eth_requestAccounts'});if(a&&a[0])got=a[0];}catch(e){}}
+  const b=$('walletBtn');
+  if(got&&b){b.textContent=got.slice(0,6)+'…'+got.slice(-4);b.classList.add('on');}
+  if(!got)showMsg('No se detectó ninguna wallet. También puedes copiar la dirección y pagar desde donde prefieras.','err');
+  return got;
+}
+
 
 async function load(){
   const id=new URLSearchParams(location.search).get('id');
@@ -230,7 +240,7 @@ function render(){
   $('pAddr').textContent=PAY.to;
   new QRCode($('qr'),{text:PAY.to,width:168,height:168,correctLevel:QRCode.CorrectLevel.M});
   fetch('/api/cup').then(r=>r.json()).then(d=>{
-    if(d&&d.rates&&d.rates.USDT)$('pCup').textContent='≈ '+Math.round(PAY.amount*d.rates.USDT).toLocaleString('es-ES')+' CUP · tasa elTOQUE';
+    if(d&&d.rates&&d.rates.USDT)$('pCup').textContent='≈ '+Math.round(PAY.amount*d.rates.USDT).toLocaleString('es-ES')+' CUP · tasa cripto elTOQUE';
   }).catch(()=>{});
 }
 function renderPaid(){
@@ -299,5 +309,6 @@ async function confirmPaid(txid){
 CFG.paintNetworkUI(null);
 load();
 </script>
+<script src="/nav.js"></script>
 </body>
 </html>

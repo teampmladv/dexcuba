@@ -220,7 +220,7 @@ let CUP=null;
 fetch('/api/cup').then(r=>r.json()).then(d=>{if(d&&d.rates&&d.rates.USDT)CUP=d.rates.USDT;}).catch(()=>{});
 $('fAmount').addEventListener('input',()=>{
   const v=Number($('fAmount').value);
-  $('cupHint').textContent=(v>0&&CUP)?('≈ '+Math.round(v*CUP).toLocaleString('es-ES')+' CUP · tasa elTOQUE'):'';
+  $('cupHint').textContent=(v>0&&CUP)?('≈ '+Math.round(v*CUP).toLocaleString('es-ES')+' CUP · tasa cripto elTOQUE'):'';
 });
 
 async function connectWallet(){
@@ -271,5 +271,6 @@ function copyLink(){
 }
 CFG.paintNetworkUI(null);
 </script>
+<script src="/nav.js"></script>
 </body>
 </html>

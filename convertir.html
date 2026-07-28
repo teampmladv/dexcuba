@@ -232,6 +232,15 @@ async function ensureChain(eth){
     return false;}}
 async function connectWallet(){
   const eth=getInjected();
+  // Con cuenta ya conectada, el botón sirve para CAMBIAR de cuenta:
+  // abre el selector de MetaMask y recarga con la elegida.
+  if(account&&eth){
+    try{
+      await eth.request({method:'wallet_requestPermissions',params:[{eth_accounts:{}}]});
+      location.reload();
+    }catch(e){}
+    return;
+  }
   if(!eth){showMsg('Necesitas una wallet EVM (MetaMask, Trust, Bitget…). Abre este sitio desde el navegador de tu wallet.','err');return;}
   try{
     await eth.request({method:'eth_requestAccounts'});
@@ -367,4 +376,5 @@ fillSelects();
 ready();
 const eth0=getInjected();
 if(eth0&&eth0.selectedAddress)connectWallet();
-</script>\n</body>\n</html>\n
+</script>\n<script src="/nav.js"></script>
+</body>\n</html>\n

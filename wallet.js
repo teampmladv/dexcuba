@@ -197,7 +197,11 @@
     },
 
     /* Reconexión silenciosa: sin ventanas ni selector. */
+    disconnect: function () {
+      try { sessionStorage.setItem('dx_no_reconnect', '1'); } catch (e) {}
+    },
     reconnect: async function () {
+      try { if (sessionStorage.getItem('dx_no_reconnect')) return null; } catch (e) {}
       await waitForInjection(1200);
       var tw = window.tronWeb;
       if (tw && tw.defaultAddress && tw.defaultAddress.base58) {

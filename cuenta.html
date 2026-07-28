@@ -113,6 +113,12 @@ a{color:inherit;text-decoration:none}
 .pay-box{background:var(--panel2);border:1px dashed rgba(240,194,75,.4);border-radius:10px;padding:12px;margin:12px 0;font-size:12px}
 .pay-box code{font-family:var(--mono);color:var(--gold);word-break:break-all;display:block;margin-top:5px}
 .foot{max-width:940px;margin:0 auto;padding:10px 20px 34px;color:var(--muted);font-size:11.5px;text-align:center}
+
+/* Modal centrado (selector de wallet) */
+.overlay{position:fixed;inset:0;background:rgba(4,9,15,.72);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.overlay.open{display:flex}
+.overlay .modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.overlay .modal h3{font-family:var(--display);font-size:18px;margin-bottom:6px}
 </style>
 <meta property="og:title" content="DexCuba">
 <meta property="og:description" content="Mercado P2P de USDT por CUP con escrow. Sin custodia.">
@@ -234,6 +240,7 @@ a{color:inherit;text-decoration:none}
             <div class="pay-box" id="payBox">
               Envía <b>5 USDT (TRC-20)</b> a esta dirección desde tu wallet:
               <code id="vipWallet">—</code>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px" id="vipNetLabel">USDT TRC-20 · TRON</div>
             </div>
             <button class="btn btn-gold" onclick="payVip(5)">Pagar VIP · 5 USDT/año</button>
             <div class="field" style="margin-top:12px">
@@ -257,6 +264,32 @@ a{color:inherit;text-decoration:none}
             <button class="btn btn-gold" style="margin-top:12px" onclick="payVip(5)">Renovar VIP · 5 USDT</button>
           </div>
           <div class="msg" id="vipMsg"></div>
+        </div>
+
+        <!-- Recomendaciones -->
+        <div class="card" id="refCard" style="display:none">
+          <h2>Invita y gana</h2>
+          <p style="font-size:12.5px;color:var(--muted);margin-bottom:10px">
+            Comparte tu enlace. Cuando alguien que traigas contrate VIP o Business,
+            <b id="refPct">25</b>% de ese pago es para ti.
+          </p>
+          <div style="background:var(--panel2);border:1px dashed rgba(31,199,182,.45);border-radius:10px;padding:10px;margin-bottom:10px">
+            <code id="refLink" style="font-family:var(--mono);font-size:11.5px;color:var(--accent);word-break:break-all"></code>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <button class="btn btn-accent" style="flex:1" onclick="copyRef()">Copiar enlace</button>
+            <a class="btn btn-ghost" style="flex:1;text-align:center" id="refWa" target="_blank" rel="noopener">WhatsApp</a>
+            <a class="btn btn-ghost" style="flex:1;text-align:center" id="refTg" target="_blank" rel="noopener">Telegram</a>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+            <div style="background:var(--panel2);border-radius:10px;padding:10px">
+              <b id="refN" style="display:block;font-size:19px">0</b><span style="font-size:11px;color:var(--muted)">recomendados</span></div>
+            <div style="background:var(--panel2);border-radius:10px;padding:10px">
+              <b id="refG" style="display:block;font-size:19px">0</b><span style="font-size:11px;color:var(--muted)">USDT ganados</span></div>
+            <div style="background:var(--panel2);border-radius:10px;padding:10px">
+              <b id="refP" style="display:block;font-size:19px;color:var(--accent)">0</b><span style="font-size:11px;color:var(--muted)">por cobrar</span></div>
+          </div>
+          <div id="refMsg" style="font-size:11.5px;color:var(--muted);margin-top:10px"></div>
         </div>
 
         <!-- Cobros -->
@@ -291,7 +324,102 @@ function msg(el,t,cls){const m=$(el);m.textContent=t;m.className='msg show '+(cl
 function clear(el){$(el).className='msg';}
 
 /* ===== Login por firma ===== */
+function getEth(){const e=window.ethereum;if(!e)return null;return (e.providers&&e.providers[0])||e;}
+
 async function login(){
+  const hasTron=!!(window.tronLink||window.tronWeb||(window.okxwallet&&window.okxwallet.tronLink));
+  const hasEvm=!!getEth();
+  if(hasTron&&hasEvm){labelChooser('l');document.getElementById('loginChooser').classList.add('open');return;}
+  if(hasEvm&&!hasTron)return loginEvm();
+  if(hasTron&&!hasEvm)return loginTron();
+  // Ninguna wallet inyectada: típico en el navegador normal del móvil
+  document.getElementById('noWallet').classList.add('open');
+}
+function copySite(){
+  const u=location.origin;
+  if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>{
+    try{document.querySelector('#noWallet code').textContent='copiado ✓';
+        setTimeout(()=>{document.querySelector('#noWallet code').textContent='dexcuba.com';},1500);}catch(e){}
+  });
+}
+
+/* TronLink solo expone un esquema propio (tronlinkoutside://), que el navegador
+   no resuelve si la app no lo registró — en incógnito o sin la app instalada no
+   ocurre nada. Intentamos abrirlo y, si en 1,5 s seguimos aquí, mostramos la
+   salida que siempre funciona: copiar la dirección y abrirla dentro de la app. */
+function openTronLink(){
+  var deep='tronlinkoutside://pull.activity?param=%7B%22url%22%3A%22https%3A%2F%2Fdexcuba.com%22%2C%22action%22%3A%22open%22%2C%22protocol%22%3A%22tronlink%22%2C%22version%22%3A%221.0%22%7D';
+  var t=Date.now(), gone=false;
+  function bye(){gone=true;}
+  document.addEventListener('visibilitychange',bye,{once:true});
+  window.addEventListener('pagehide',bye,{once:true});
+  try{window.location.href=deep;}catch(e){}
+  setTimeout(function(){
+    if(gone||document.hidden||Date.now()-t>3000)return;   // la app se abrió
+    var box=document.getElementById('tronFallback');
+    if(box){
+      box.style.display='block';
+      box.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+  },1500);
+  return false;
+}
+function closeNoWallet(){document.getElementById('noWallet').classList.remove('open');}
+
+/* Detecta la marca de la wallet inyectada para nombrarla en el selector:
+   dentro de Trust, el usuario ve "Trust Wallet" y no dos opciones abstractas. */
+function evmBrand(){
+  const e=(window.ethereum&&((window.ethereum.providers&&window.ethereum.providers[0])||window.ethereum))||null;
+  if(!e)return null;
+  if(e.isTrust||e.isTrustWallet)return 'Trust Wallet';
+  if(e.isMetaMask)return 'MetaMask';
+  if(e.isBitKeep||e.isBitget)return 'Bitget';
+  if(e.isOkxWallet||e.isOKExWallet)return 'OKX';
+  if(e.isTokenPocket)return 'TokenPocket';
+  return 'tu wallet EVM';
+}
+function tronBrand(){
+  if(window.tronLink&&window.tronLink.isTrust)return 'Trust Wallet';
+  if(window.tronLink)return 'TronLink';
+  if(window.tronWeb)return 'tu wallet TRON';
+  return null;
+}
+function labelChooser(prefix){
+  const t=document.getElementById(prefix+'BtnTron'), e=document.getElementById(prefix+'BtnEvm');
+  const tb=tronBrand(), eb=evmBrand();
+  if(t)t.innerHTML='Red TRON <span style="font-size:11px;opacity:.85">· USDT TRC-20'+(tb?' · '+tb:'')+'</span>';
+  if(e)e.innerHTML='BNB Chain <span style="font-size:11px;opacity:.85">· USDT BEP-20'+(eb?' · '+eb:'')+'</span>';
+}
+function closeLoginChooser(){document.getElementById('loginChooser').classList.remove('open');}
+
+async function loginEvm(){
+  closeLoginChooser();
+  const eth=getEth();
+  if(!eth){msg('loginMsg','No se detectó MetaMask ni otra wallet EVM.','err');return;}
+  try{
+    const accs=await eth.request({method:'eth_requestAccounts'});
+    if(!accs||!accs[0]){msg('loginMsg','No se autorizó ninguna cuenta.','err');return;}
+    account=accs[0].toLowerCase(); tw=null;
+    msg('loginMsg','Pidiendo código de acceso…','inf');
+    const r=await fetch(API+'/auth?address='+account);
+    const d=await r.json();
+    if(d.error){msg('loginMsg',errText(d.error),'err');return;}
+    msg('loginMsg','Firma el mensaje en tu wallet (es gratis)…','inf');
+    let signature;
+    try{
+      const hexMsg='0x'+[...new TextEncoder().encode(d.message)].map(b=>b.toString(16).padStart(2,'0')).join('');
+      signature=await eth.request({method:'personal_sign',params:[hexMsg,account]});
+    }catch(e){msg('loginMsg','Firma cancelada.','err');return;}
+    const r2=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({address:account,signature,nonce:d.nonce,ref:(localStorage.getItem('dx_ref')||'')})});
+    const d2=await r2.json();
+    if(d2.error){msg('loginMsg',errText(d2.error),'err');return;}
+    onLogged(d2);
+  }catch(e){msg('loginMsg','No se pudo conectar la wallet EVM.','err');}
+}
+
+async function loginTron(){
+  closeLoginChooser();
   const w=await DexWallet.connect();
   if(!w){msg('loginMsg','No se pudo conectar. Instala o desbloquea tu wallet TRON.','err');return;}
   tw=w.tronWeb; account=w.address;
@@ -305,13 +433,17 @@ async function login(){
     try{ signature=await tw.trx.signMessageV2(d.message); }
     catch(e){msg('loginMsg','Firma cancelada.','err');return;}
     const r2=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({address:account,signature,nonce:d.nonce})});
+      body:JSON.stringify({address:account,signature,nonce:d.nonce,ref:(localStorage.getItem('dx_ref')||'')})});
     const d2=await r2.json();
     if(d2.error){msg('loginMsg',errText(d2.error),'err');return;}
-    token=d2.token; localStorage_set('dx_token',token);
-    me=d2.user; renderProfile(); loadVip(); loadReviews(); loadPays();
-    clear('loginMsg');
+    onLogged(d2);
   }catch(e){msg('loginMsg','Error: '+(e.message||e),'err');}
+}
+
+function onLogged(d2){
+  token=d2.token; localStorage_set('dx_token',token);
+  me=d2.user; renderProfile(); loadVip(); loadReviews(); loadPays(); loadRef();
+  clear('loginMsg');
 }
 function logout(){
   token=null;me=null;localStorage_del('dx_token');
@@ -327,7 +459,7 @@ async function loadMe(){
     const r=await fetch(API+'/profile',{headers:{Authorization:'Bearer '+token}});
     const d=await r.json();
     if(d.error){logout();return;}
-    me=d.user; renderProfile(); renderReviews(d.reviews); loadVip(); loadPays();
+    me=d.user; renderProfile(); renderReviews(d.reviews); loadVip(); loadPays(); loadRef(); loadRef();
   }catch(e){}
 }
 function renderProfile(){
@@ -363,6 +495,32 @@ async function saveProfile(){
 }
 
 /* ===== Reseñas ===== */
+async function loadRef(){
+  if(!token)return;
+  try{
+    const r=await fetch(API+'/ref',{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    if(d.error)return;
+    $('refCard').style.display='block';
+    $('refPct').textContent=d.pct;
+    $('refLink').textContent=d.link;
+    $('refN').textContent=d.referidos;
+    $('refG').textContent=d.ganado;
+    $('refP').textContent=d.pendiente;
+    const txt=encodeURIComponent('Te invito a DexCuba: cambia y cobra en USDT sin papeleos. '+d.link);
+    $('refWa').href='https://wa.me/?text='+txt;
+    $('refTg').href='https://t.me/share/url?url='+encodeURIComponent(d.link);
+    $('refMsg').innerHTML = d.puede_cobrar
+      ? '✅ Puedes solicitar el pago de <b>'+d.pendiente+' USDT</b> desde el soporte.'
+      : 'A partir de <b>'+d.min_payout+' USDT</b> acumulados puedes solicitar el pago.';
+  }catch(e){}
+}
+function copyRef(){
+  const t=$('refLink').textContent;
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>{
+    $('refMsg').textContent='Enlace copiado ✓';
+  });
+}
 async function loadPays(){
   if(!token)return;
   try{
@@ -418,7 +576,13 @@ async function loadVip(){
     if(d.error){return;}
     vipInfo=d;
     $('vipBenefits').innerHTML=(d.benefits||[]).map(b=>`<li>${esc(b)}</li>`).join('');
-    $('vipWallet').textContent=d.pay_to||'(no configurado aún)';
+    // La dirección de pago depende de la red con la que entraste
+    const isEvmSession = !!(me && me.address && me.address.startsWith('0x'));
+    $('vipWallet').textContent = isEvmSession
+      ? (d.pay_to_bsc || '(pago en BSC no configurado aún)')
+      : (d.pay_to || '(no configurado aún)');
+    const lbl=document.getElementById('vipNetLabel');
+    if(lbl)lbl.textContent = isEvmSession ? 'USDT BEP-20 · BNB Chain' : 'USDT TRC-20 · TRON';
     if($('bizBenefits'))$('bizBenefits').innerHTML=(d.benefits_business||[]).map(b=>`<li>${esc(b)}</li>`).join('');
     if(d.business){
       $('vipInactive').style.display='none';$('vipActive').style.display='block';
@@ -431,11 +595,46 @@ async function loadVip(){
     }
   }catch(e){}
 }
+
+async function payVipEvm(price){
+  price=price||5;
+  if(!vipInfo||!vipInfo.pay_to_bsc){
+    msg('vipMsg','El pago en BSC aún no está configurado por el administrador.','err');return;
+  }
+  const eth=getEth();
+  if(!eth){msg('vipMsg','No se detectó una wallet EVM.','err');return;}
+  try{
+    await eth.request({method:'eth_requestAccounts'});
+    try{await eth.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x38'}]});}catch(e){}
+    msg('vipMsg','Firma el pago de '+price+' USDT (BEP-20) en tu wallet…','inf');
+
+    // transfer(address,uint256) — BEP-20 usa 18 decimales
+    const to=vipInfo.pay_to_bsc.toLowerCase().replace(/^0x/,'').padStart(64,'0');
+    const amount=(BigInt(price)*(10n**18n)).toString(16).padStart(64,'0');
+    const data='0xa9059cbb'+to+amount;
+    const from=(await eth.request({method:'eth_accounts'}))[0];
+    const txid=await eth.request({method:'eth_sendTransaction',
+      params:[{from,to:vipInfo.token_bsc,data}]});
+
+    $('fTxid').value=txid;
+    msg('vipMsg','Pago enviado. Validando en la red…','inf');
+    // La confirmación puede tardar unos segundos: reintentamos
+    for(let i=0;i<12;i++){
+      await new Promise(r=>setTimeout(r,4000));
+      const ok=await tryClaim(txid,true);
+      if(ok)return;
+    }
+    msg('vipMsg','El pago se envió pero aún no se valida. Pulsa "Validar mi pago" en un momento.','err');
+  }catch(e){msg('vipMsg','✗ '+((e&&(e.message||e.reason))||e),'err');}
+}
+
 async function payVip(price){
   price=price||5;
   if(!vipInfo||!vipInfo.pay_to||!vipInfo.token){
     msg('vipMsg','El pago VIP aún no está configurado por el administrador.','err');return;
   }
+  // Sesión EVM: se paga en USDT BEP-20 sobre BSC
+  if(!tw && me && me.address && me.address.startsWith('0x')) return payVipEvm(price);
   if(!tw){msg('vipMsg','Conecta tu wallet primero.','err');return;}
   try{
     msg('vipMsg','Firma el pago de '+price+' USDT en tu wallet…','inf');
@@ -500,7 +699,32 @@ if(token)loadMe();
 DexWallet.reconnect().then(w=>{if(w){tw=w.tronWeb;account=w.address;}});
 </script>
 <script src="/cookies.js"></script>
+<!-- ==== Sin wallet detectada (típico en navegador del móvil) ==== -->
+<div class="overlay" id="noWallet" role="dialog" aria-modal="true" aria-label="Abrir en tu wallet">
+  <div class="modal" style="max-width:360px;text-align:center">
+    <h3 style="margin-bottom:6px">Abre DexCuba desde tu wallet</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.5">En el móvil, las wallets solo funcionan desde <b>su propio navegador</b>. Toca tu wallet y la página se abrirá dentro de ella.</p>
+    <a class="btn" style="display:block;width:100%;margin-bottom:8px;background:rgba(240,185,11,.14);color:#F0B90B;border:1px solid rgba(240,185,11,.4);text-align:center" href="https://metamask.app.link/dapp/dexcuba.com">Abrir en MetaMask</a>
+    <button class="btn btn-accent" style="width:100%;margin-bottom:8px" onclick="return openTronLink()">Abrir en TronLink</button><div id="tronFallback" style="display:none;background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.35);border-radius:10px;padding:10px;margin:8px 0;font-size:11.5px;color:var(--muted);line-height:1.5;text-align:left">No se pudo abrir TronLink automáticamente (pasa en modo incógnito o si no está instalada).<br>Abre la app <b>TronLink</b> → menú <b>Descubrir / Navegador</b> → escribe <code style="font-family:var(--mono);color:var(--accent)">dexcuba.com</code>.<br><a href="https://www.tronlink.org/" target="_blank" rel="noopener" style="color:var(--accent)">Descargar TronLink</a></div>
+    <a class="btn btn-ghost" style="display:block;width:100%;margin-bottom:8px;text-align:center" href="https://link.trustwallet.com/open_url?coin_id=195&amp;url=https%3A%2F%2Fdexcuba.com">Abrir en Trust Wallet</a>
+    <div style="background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0;font-size:11.5px;color:var(--muted);line-height:1.5">Si el botón no abre tu wallet, copia esta dirección y pégala en el <b>navegador interno</b> de tu app:<br><code style="font-family:var(--mono);font-size:12px;color:var(--accent)">dexcuba.com</code> <button onclick="copySite()" style="border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:11px;color:var(--accent)">Copiar</button></div><p style="font-size:11.5px;color:var(--muted);margin-bottom:10px">¿No tienes ninguna? Instala una y vuelve: tu wallet es tu cuenta.</p>
+    <button class="btn btn-ghost" style="width:100%" onclick="closeNoWallet()">Cerrar</button>
+  </div>
+</div>
+
+<!-- Selector de wallet para entrar -->
+<div class="overlay" id="loginChooser" role="dialog" aria-modal="true" aria-label="Elegir wallet">
+  <div class="modal" style="max-width:340px;text-align:center">
+    <h3 style="margin-bottom:4px">¿Con qué wallet entras?</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Tu cuenta es tu wallet: firma un mensaje gratis y listo.</p>
+    <button id="lBtnTron" class="btn btn-accent" style="width:100%;margin-bottom:8px" onclick="loginTron()">Red TRON</button>
+    <button id="lBtnEvm" class="btn" style="width:100%;background:rgba(240,185,11,.14);color:#F0B90B;border:1px solid rgba(240,185,11,.4)" onclick="loginEvm()">BNB Chain</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeLoginChooser()">Cancelar</button>
+  </div>
+</div>
+
 <script src="/wallet.js"></script>
 <script src="/pwa.js"></script>
+<script src="/nav.js"></script>
 </body>
 </html>

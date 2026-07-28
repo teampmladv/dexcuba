@@ -2,12 +2,13 @@
 // Ruta: /api/prices
 // Estrategia: caché edge 120 s → CoinGecko (con clave opcional) → Binance (respaldo) → último dato bueno.
 
-const COINS = ['bitcoin', 'ethereum', 'tether', 'tron', 'usd-coin', 'litecoin'];
+const COINS = ['bitcoin', 'ethereum', 'tether', 'tron', 'usd-coin', 'litecoin', 'binancecoin'];
 const BINANCE_MAP = {
   bitcoin: 'BTCUSDT',
   ethereum: 'ETHUSDT',
   tron: 'TRXUSDT',
   litecoin: 'LTCUSDT',
+  binancecoin: 'BNBUSDT',
 };
 
 export async function onRequestGet(context) {

@@ -277,7 +277,7 @@ a{color:inherit;text-decoration:none}
 <script>
 const METHODS=['Efectivo','Transferencia CUP','Transfermóvil','Enzona','Zelle','Saldo móvil'];
 const ASSET_COLOR={USDT:'#26A17B',BTC:'#F7931A'};
-let CUP_REF=null;
+let CUP_REF=null, RATES={};
 let allOffers=[];
 let fAsset='USDT', fSide='all', fNet='all';
 
@@ -286,7 +286,13 @@ async function loadRef(){
   try{
     const r=await fetch('/api/cup');if(!r.ok)return;
     const d=await r.json();
-    if(d&&d.usd_cup){CUP_REF=d.usd_cup;document.getElementById('ratePillVal').textContent=Math.round(d.usd_cup);}
+    // En Cuba las cripto tienen su propia tasa (TRMCC de elTOQUE), distinta a la
+    // del dólar en efectivo: USDT suele cotizar con prima sobre el USD billete.
+    // Comparar una oferta de USDT contra la tasa del efectivo la haría parecer
+    // cara sin serlo, así que cada activo se compara con SU tasa.
+    RATES=(d&&d.rates)||{};
+    CUP_REF=RATES.USDT||d.usd_cup||null;
+    if(CUP_REF)document.getElementById('ratePillVal').textContent=Math.round(CUP_REF);
   }catch(e){}
 }
 
@@ -344,8 +350,9 @@ function render(){
 function card(o){
   if(o.type==='netswap')return swapCard(o);
   const sideLabel=o.side==='vendo'?'VENDE':'COMPRA';
-  const refDiff=CUP_REF?((o.cup_per_usd-CUP_REF)/CUP_REF*100):null;
-  const diffStr=refDiff!==null?(refDiff>=0?'+':'')+refDiff.toFixed(1)+'% vs elTOQUE':'';
+  const ref=(RATES&&RATES[o.asset])||CUP_REF;   // USDT vs tasa USDT, BTC vs tasa BTC
+  const refDiff=ref?((o.cup_per_usd-ref)/ref*100):null;
+  const diffStr=refDiff!==null?(refDiff>=0?'+':'')+refDiff.toFixed(1)+'% vs elTOQUE '+esc(o.asset||''):'';
   const methods=o.methods.map(m=>`<span class="chip">${esc(m)}</span>`).join('');
   const contact=esc(o.contact);
   const link=contactLink(o.contact);
@@ -466,5 +473,6 @@ loadRef();loadOffers();
 </script>
 <script src="/cookies.js"></script>
 <script src="/pwa.js"></script>
+<script src="/nav.js"></script>
 </body>
 </html>

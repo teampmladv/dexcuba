@@ -329,6 +329,15 @@ async function ensureChain(eth){
 }
 async function connectWallet(){
   const eth=getInjected();
+  // Con cuenta ya conectada, el botón sirve para CAMBIAR de cuenta:
+  // abre el selector de MetaMask y recarga con la elegida.
+  if(account&&eth){
+    try{
+      await eth.request({method:'wallet_requestPermissions',params:[{eth_accounts:{}}]});
+      location.reload();
+    }catch(e){}
+    return;
+  }
   if(!eth){
     showMsg('No se detectó una wallet EVM. Instala <a href="https://metamask.io" target="_blank" rel="noopener" style="color:var(--accent)">MetaMask</a>, Trust o Bitget, o abre este sitio desde el navegador de tu wallet.','err');
     return;
@@ -363,7 +372,8 @@ async function showBalance(){
   if(!usdt||!account)return;
   try{
     const b=await usdt.balanceOf(account);
-    $('balLine').textContent='Tu saldo: '+Number(fmt(b)).toLocaleString('es-ES',{maximumFractionDigits:2})+' USDT (BEP-20)';
+    const el=$('balPill');
+    if(el){el.style.display='inline-block';el.textContent=Number(fmt(b)).toLocaleString('es-ES',{maximumFractionDigits:2})+' USDT';}
   }catch(e){}
 }
 
@@ -423,7 +433,8 @@ async function createTrade(){
     // id del trade: nextId-1 tras confirmar
     let id='?';
     try{ id=(await escrow.nextId()).sub(1).toString(); }catch(e){}
-    showMsg('✓ Trade creado con id <b>'+id+'</b>. El USDT queda bloqueado hasta liberar o reembolsar. <a href="'+NET.explorer+'/tx/'+tx.hash+'" target="_blank" rel="noopener" style="color:var(--accent)">Ver transacción</a>','ok');
+    try{setTradeId(String(id));}catch(e){}
+    showMsg('✓ Trade creado con id <b>'+id+'</b>. El USDT queda bloqueado hasta liberar o reembolsar. <a href="'+NET.explorer+'/tx/'+tx.hash+'" target="_blank" rel="noopener" style="color:var(--accent)">Ver transacción</a>'+tradeShareHtml(id),'ok');
     showBalance();
   }catch(e){showMsg('✗ '+friendlyError(e),'err');}
   btn.disabled=false;
@@ -431,8 +442,9 @@ async function createTrade(){
 
 /* ===== Acciones sobre un trade ===== */
 async function act(kind){
-  const id=$('aId').value.trim();
-  if(id===''){showMsg('Indica el número de trade.','err');return;}
+  const id=anyTradeId(kind==='paid'?'pId':'rId');
+  if(id===''){showMsg('Escribe el número de trade (te lo dimos al bloquear el USDT).','err');return;}
+  setTradeId(id);
   const map={paid:['markPaid','btnPaid','Pago marcado. El vendedor ya puede liberar.'],
              release:['release','btnRelease','Fondos liberados al comprador (comisión 0,5 % descontada).'],
              refund:['refund','btnRefund','Fondos devueltos al vendedor (sin comisión).']};
@@ -449,10 +461,67 @@ async function act(kind){
   btn.disabled=false;
 }
 
+function markPaid(){return act('paid');}
+function doRelease(){return act('release');}
+function doRefund(){return act('refund');}
+
 /* ===== Consulta ===== */
+
+/* Un solo ID para las tres tarjetas: al crear o consultar un trade, se rellena
+   en todas. Evita el clásico "escribo en un campo y pulso el botón de otro". */
+
+/* Toma el ID de la tarjeta usada o, si está vacía, de cualquiera de las otras:
+   el usuario no tiene por qué saber en qué casilla escribir. */
+function anyTradeId(preferred){
+  const ids=[preferred,'lookupId','pId','rId'];
+  for(const k of ids){
+    const e=k&&document.getElementById(k);
+    const v=e&&e.value&&e.value.trim();
+    if(v)return v;
+  }
+  return '';
+}
+
+/* Enlace del trade para el comprador: lleva el ID dentro, así no hay que
+   dictar números por WhatsApp (un dígito mal copiado y se marca el trade
+   equivocado). Al abrirlo, el ID queda puesto en las tres tarjetas. */
+function tradeUrl(id){
+  const net=(NET&&NET.isTestnet)?'&net=nile':'';
+  return location.origin+location.pathname+'?id='+id+net;
+}
+function copyTradeLink(id){
+  const u=tradeUrl(id);
+  if(navigator.clipboard)navigator.clipboard.writeText(u);
+  return false;
+}
+function tradeShareHtml(id){
+  const u=tradeUrl(id);
+  const t=encodeURIComponent('Trade '+id+' en DexCuba. Abre este enlace para ver el estado y marcar tu pago: '+u);
+  return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:12.5px">'
+    +'<b>Envíale este enlace al comprador</b> — lleva el número dentro:<br>'
+    +'<code style="font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all">'+u+'</code><br>'
+    +'<a href="https://wa.me/?text='+t+'" target="_blank" rel="noopener" style="color:var(--accent)">WhatsApp</a> · '
+    +'<a href="https://t.me/share/url?url='+encodeURIComponent(u)+'" target="_blank" rel="noopener" style="color:var(--accent)">Telegram</a> · '
+    +'<a href="#" onclick="return copyTradeLink('+id+')" style="color:var(--accent)">Copiar</a></div>';
+}
+/* Si la URL trae ?id=, se rellena y se consulta solo: el comprador entra y ve su trade. */
+function applyUrlTradeId(){
+  const q=new URLSearchParams(location.search).get('id');
+  if(q&&/^\d+$/.test(q)){setTradeId(q);return true;}
+  return false;
+}
+function setTradeId(id){
+  ['lookupId','pId','rId'].forEach(k=>{const e=document.getElementById(k);if(e)e.value=id;});
+  try{localStorage.setItem('dx_last_trade',String(id));}catch(e){}
+}
+function restoreTradeId(){
+  try{const v=localStorage.getItem('dx_last_trade');if(v)setTradeId(v);}catch(e){}
+}
+async function viewTrade(){return lookup();}
 async function lookup(){
-  const id=$('qId').value.trim()||$('aId').value.trim();
-  if(id===''){showMsg('Indica el número de trade a consultar.','err');return;}
+  const id=anyTradeId('lookupId');
+  if(id===''){showMsg('Escribe el número de trade que quieres consultar.','err');return;}
+  setTradeId(id);
   if(!escrow){
     if(!ESCROW_ADDRESS){showMsg('El escrow BEP-20 aún no está desplegado.','err');return;}
     const p=new ethers.providers.JsonRpcProvider(NET.rpc);
@@ -460,22 +529,34 @@ async function lookup(){
   }
   try{
     const t=await escrow.trades(id);
-    if(t.seller===ethers.constants.AddressZero){showMsg('No existe el trade '+id+'.','err');return;}
-    $('qBox').style.display='block';
-    $('qSeller').textContent=short(t.seller);
-    $('qBuyer').textContent=short(t.buyer);
-    $('qArb').textContent=short(t.arbitrator);
-    $('qAmt').textContent=Number(fmt(t.amount)).toLocaleString('es-ES')+' USDT';
-    $('qState').textContent=STATES[t.state]||t.state;
+    if(t.seller===ethers.constants.AddressZero){$('tradeView').innerHTML='';showMsg('No existe el trade '+id+'.','err');return;}
+    const row=(k,v)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(36,50,71,.5);font-size:13px"><span style="color:var(--muted)">${k}</span><span style="font-family:var(--mono);font-size:12px">${v}</span></div>`;
+    $('tradeView').innerHTML=
+      row('Estado','<b style="color:var(--accent)">'+(STATES[t.state]||t.state)+'</b>')+
+      row('Monto',Number(fmt(t.amount)).toLocaleString('es-ES')+' USDT')+
+      row('Vendedor',short(t.seller))+
+      row('Comprador',short(t.buyer))+
+      row('Árbitro',short(t.arbitrator));
     clearMsg();
   }catch(e){showMsg('✗ '+friendlyError(e),'err');}
 }
 
 /* ===== Init ===== */
+restoreTradeId();
+if(applyUrlTradeId())setTimeout(()=>{try{viewTrade();}catch(e){}},600);
 CFG.paintNetworkUI(null);
+// Árbitro oficial de DexCuba pre-rellenado (el usuario puede cambiarlo si pacta otro)
+(function(){
+  const a=$('cArb');
+  if(a&&!a.value&&NET.arbitrator){
+    a.value=NET.arbitrator;
+    a.title='Árbitro oficial de DexCuba (hardware wallet). Puedes usar otro si ambas partes lo acuerdan.';
+  }
+})();
 (function(){const fb=$('btnFaucet');if(fb&&NET.faucet&&USDT_ADDRESS)fb.style.display='block';})();
 const eth0=getInjected();
 if(eth0&&eth0.selectedAddress)connectWallet();
 </script>
+<script src="/nav.js"></script>
 </body>
 </html>

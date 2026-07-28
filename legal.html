@@ -154,6 +154,12 @@ td code{font-family:var(--mono);font-size:12px;color:var(--accent)}
     <p>El pago en moneda fiduciaria (por ejemplo pesos cubanos) ocurre <strong>fuera
     de la cadena</strong> y fuera de DexCuba. No podemos verificar, garantizar ni
     revertir esos pagos.</p>
+    <p>El escrow opera en dos redes: <strong>TRON (USDT TRC-20)</strong> y
+    <strong>BNB Smart Chain (USDT BEP-20)</strong>. Cada red tiene su propio contrato,
+    con código público y verificado en los exploradores correspondientes. Por seguridad,
+    cada operación admite un máximo de <strong>200 USDT</strong>.</p>
+    <p>Las redes no son intercambiables: enviar fondos de una red a una dirección de
+    otra provoca su pérdida irreversible, y DexCuba no puede recuperarlos.</p>
 
     <h3>4. Resolución de disputas y árbitro</h3>
     <p>Cada operación de escrow designa un árbitro elegido por las partes. En caso de
@@ -176,24 +182,43 @@ td code{font-family:var(--mono);font-size:12px;color:var(--accent)}
 
     <h3>6. Cuentas y suscripción VIP</h3>
     <p>La cuenta se crea firmando un mensaje con tu wallet; no se piden documentos de
-    identidad. La suscripción VIP cuesta 5 USDT al año, se paga on-chain y da acceso a
-    ofertas destacadas, mayor límite de publicaciones e insignia en el perfil.</p>
+    identidad. Existen dos suscripciones anuales, pagadas on-chain en USDT y verificadas
+    automáticamente contra la red: <strong>VIP (5 USDT)</strong>, con ofertas destacadas,
+    mayor límite de publicaciones, enlaces de cobro ilimitados e insignia en el perfil; y
+    <strong>Business (20 USDT)</strong>, que añade el modo mostrador sin límite diario.
+    El pago puede hacerse en TRC-20 o en BEP-20, según la red con la que hayas entrado.</p>
+    <p>Al renovar antes del vencimiento, el nuevo periodo se suma al que esté en curso.</p>
     <p>Por la naturaleza de los pagos en blockchain, <strong>los pagos son
     irreversibles y no reembolsables</strong>. Puedes dejar de usar el servicio cuando
     quieras; la suscripción se agota al cumplir su plazo.</p>
 
-    <h3>7. Sin garantías</h3>
+    <h3>7. Programa de recomendaciones</h3>
+    <p>Cada cuenta dispone de un enlace personal. Cuando una persona crea su cuenta a
+    través de ese enlace, queda vinculada a quien la recomendó. La vinculación es
+    <strong>única y definitiva</strong>: se establece al crear la cuenta y no puede
+    modificarse después. No es posible recomendarse a uno mismo.</p>
+    <p>Si una persona recomendada contrata una suscripción VIP o Business, se acredita a
+    quien la recomendó el <strong>25 %</strong> del importe de ese pago. La comisión se
+    calcula únicamente sobre las suscripciones: las operaciones de escrow se liquidan
+    directamente en la blockchain y no forman parte de este programa.</p>
+    <p>El saldo acumulado puede solicitarse a partir de <strong>5 USDT</strong>. DexCuba
+    no custodia ese saldo: es un compromiso de pago que se abona a la wallet indicada por
+    el usuario y queda registrado. Nos reservamos el derecho de anular acreditaciones
+    obtenidas mediante cuentas duplicadas, automatizadas o cualquier otra práctica
+    fraudulenta, así como de modificar o finalizar el programa avisando en esta página.</p>
+
+    <h3>8. Sin garantías</h3>
     <p>El servicio se ofrece «tal cual». No garantizamos disponibilidad continua,
     ausencia de errores, ni resultados concretos de ninguna operación. Los contratos
     inteligentes, aunque se prueban, pueden contener fallos.</p>
 
-    <h3>8. Limitación de responsabilidad</h3>
+    <h3>9. Limitación de responsabilidad</h3>
     <p>En la medida que permita la ley aplicable, DexCuba no responde por pérdidas
     derivadas de: decisiones de inversión, fraudes o incumplimientos de otros usuarios,
     fallos de la red TRON o de tu wallet, variaciones del precio de las criptomonedas,
     ni del uso de tasas de cambio que se ofrecen solo como referencia.</p>
 
-    <h3>9. Cambios y contacto</h3>
+    <h3>10. Cambios y contacto</h3>
     <p>Podemos actualizar estos términos; la fecha de la última revisión aparece arriba.
     El uso continuado tras un cambio implica su aceptación. Para cualquier consulta,
     escríbenos a <a href="mailto:info@dexcuba.com">info@dexcuba.com</a>.</p>
@@ -346,5 +371,6 @@ function acceptCookies(){
 })();
 </script>
 <script src="/pwa.js"></script>
+<script src="/nav.js"></script>
 </body>
 </html>

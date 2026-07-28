@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>DexCuba Admin — Panel</title>
+<style>
+:root{--bg:#0B1220;--panel:#101A2C;--panel2:#16202F;--line:#243247;--text:#EAF0F6;--muted:#8DA0B8;--accent:#1FC7B6;--gold:#F0C24B;--up:#2EBD85;--down:#E2574C;--mono:'IBM Plex Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;padding:20px}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:20px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+.adm-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.adm-nav a{padding:7px 13px;border-radius:9px;border:1px solid var(--line);background:var(--panel);font-size:12.5px;color:var(--muted);text-decoration:none}
+.adm-nav a.on{border-color:var(--accent);color:var(--accent);background:rgba(31,199,182,.08)}
+.adm-nav a.site{margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat b{display:block;font-size:22px;font-family:var(--mono)}
+.stat span{font-size:11.5px;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{font-size:15px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--muted);font-weight:500;font-size:11px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid rgba(36,50,71,.5)}
+.mono{font-family:var(--mono);font-size:11px}
+.tag{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700}
+.tag.vip{background:rgba(240,194,75,.15);color:var(--gold)}
+.tag.biz{background:linear-gradient(135deg,#F0C24B,#C99A2E);color:#241a00}
+.tag.free{background:var(--panel2);color:var(--muted)}
+.tag.ok{background:rgba(46,189,133,.15);color:var(--up)}
+.tag.bad{background:rgba(226,87,76,.15);color:var(--down)}
+a{color:var(--accent);text-decoration:none}
+.empty{color:var(--muted);font-size:12.5px;padding:10px 0}
+.del{background:rgba(226,87,76,.12);color:var(--down);border:1px solid rgba(226,87,76,.3);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>DexCuba — Administración</h1>
+  <p class="sub">Protegido por Cloudflare Access · solo tu correo puede ver esto (páginas y APIs).</p>
+  <nav class="adm-nav">
+    <a href="/admin/index.html" class="on">📊 Panel</a>
+    <a href="/admin/ofertas.html" >🛡️ Ofertas</a>
+    <a href="/admin/usuarios.html" >👥 Usuarios</a>
+    <a href="/admin/referidos.html" style="padding:7px 13px;border-radius:9px;border:1px solid #243247;background:#101A2C;font-size:12.5px;color:#8DA0B8;text-decoration:none">🎁 Referidos</a>
+    <a href="/admin/soporte.html" style="padding:7px 13px;border-radius:9px;border:1px solid #243247;background:#101A2C;font-size:12.5px;color:#8DA0B8;text-decoration:none">🎫 Soporte</a>
+    <a href="/admin/suscripciones.html" >📒 Suscripciones</a>
+    <a href="/admin/sandbox.html" >🧪 Sandbox</a>
+    <a href="/" class="site">← Volver al sitio</a>
+  </nav>
+
+  <div class="grid" id="mets"><div class="empty">Cargando métricas…</div></div>
+
+  <div class="card">
+    <h2>Estado del sistema</h2>
+    <div id="sys" style="display:flex;gap:8px;flex-wrap:wrap"><span class="empty">Cargando…</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Contratos configurados</h2>
+    <div id="contracts" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    <p class="empty" style="margin-top:8px">Se leen de config.js según el entorno de producción (mainnet).</p>
+  </div>
+
+</div>
+<script src="/config.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function load(){
+  try{
+    const r=await fetch('/admin/stats');
+    const d=await r.json();
+    const m=d.metricas||{};
+    const items=[
+      ['Usuarios',m.usuarios],['VIP activos',m.vip_activos],['Business activos',m.business_activos],
+      ['Ofertas P2P',m.ofertas_p2p],['Cambios de red',m.cambios_de_red],
+      ['Cobros hoy',m.cobros_hoy],['Cobros pagados',m.cobros_pagados],
+      ['Volumen cobrado',(m.volumen_cobrado_usdt??0)+' USDT'],
+      ['Ingresos suscripciones',(m.ingresos_suscripciones_usdt??0)+' USDT'],
+    ];
+    $('mets').innerHTML=items.map(([k,v])=>`<div class="stat"><b>${esc(v??'—')}</b><span>${k}</span></div>`).join('');
+    const s=d.sistema||{};
+    const sys=[['KV Ofertas',s.kv_offers],['KV Usuarios',s.kv_users],['Token elTOQUE',s.eltoque_token],['Wallet VIP',s.vip_wallet]];
+    $('sys').innerHTML=sys.map(([k,ok])=>`<span class="tag ${ok?'ok':'bad'}">${ok?'✓':'✗'} ${k}</span>`).join('');
+    // Cobro del VIP: mostrar la dirección real, no solo si existe
+    const PROD='TNcES61nEynPy5chi3htK8BTg51Fs3DJ85';
+    const w=s.vip_wallet_addr;
+    if(w){
+      const ok=(w===PROD);
+      $('sys').innerHTML+='<div style="width:100%;margin-top:10px;font-size:12px">'
+        +'Cobro VIP → <code class="mono">'+esc(w)+'</code> '
+        +(ok?'<span class="tag ok">producción ✓</span>'
+            :'<span class="tag bad">⚠ NO es la wallet de producción</span>')
+        +'<br><span class="empty">Token: '+esc(s.vip_token_addr||'')+'</span>'
+        +(s.vip_wallet_bsc?'<br>Cobro VIP en BSC → <code class="mono">'+esc(s.vip_wallet_bsc)+'</code>':'<br><span class="tag bad">⚠ falta VIP_WALLET_BSC</span>')
+        +'</div>';
+    }
+    // Red de TRON: si apunta a Nile o Shasta, todo el sistema está en pruebas
+    if(s.tron_api){
+      const test=/nile|shasta/i.test(s.tron_api);
+      $('sys').innerHTML+='<div style="width:100%;margin-top:8px;font-size:12px">'
+        +'Red TRON → <code class="mono">'+esc(s.tron_api)+'</code> '
+        +(test?'<span class="tag bad">⚠ ESTÁS EN TESTNET</span>':'<span class="tag ok">mainnet ✓</span>')
+        +'</div>';
+    }
+  }catch(e){$('mets').innerHTML='<div class="empty">No se pudieron cargar las métricas: '+esc(e.message||e)+'</div>';}
+  // Contratos desde config.js (vista mainnet)
+  try{
+    const N=window.DEXCUBA.networks?window.DEXCUBA.networks.mainnet:null;
+    const E=window.DEXCUBA.evmNetworks?window.DEXCUBA.evmNetworks.bsc:null;
+    const cs=[
+      ['Escrow TRON',N&&N.escrow],['Escrow BSC',E&&E.escrow],['Convertidor BSC',E&&E.converter],
+    ];
+    $('contracts').innerHTML=cs.map(([k,v])=>`<span class="tag ${v?'ok':'bad'}">${v?'✓':'✗ pendiente'} · ${k}</span>`).join('');
+  }catch(e){$('contracts').innerHTML='<span class="empty">config.js no expone las redes aquí.</span>';}
+}
+load();
+</script>
+</body>
+</html>

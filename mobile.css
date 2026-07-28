@@ -21,37 +21,63 @@ img, svg, table { max-width: 100%; }
   .logo { font-size: 17px; gap: 8px; flex: none; }
   .logo-mark { width: 26px; height: 26px; }
 
-  /* La navegación pasa a una barra inferior fija */
-  .topnav {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    margin: 0;
-    background: #101826;
-    border-top: 1px solid #243247;
-    display: flex;
-    justify-content: space-around;
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
-    z-index: 90;
-    gap: 0;
+  /* La navegación pasa a un panel desplegable desde la cabecera.
+     No usamos barra fija abajo: los navegadores internos de las wallets
+     (Trust, MetaMask, TronLink) tienen sus propias barras y gestos ahí,
+     y tapaban o desplazaban la nuestra. */
+  .nav-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; flex: none;
+    border: 1px solid #243247; border-radius: 10px;
+    background: #16202F; color: #EAF0F6; font-size: 17px; line-height: 1;
   }
+  .nav-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(4,9,15,.6); z-index: 80;
+  }
+  .nav-backdrop.open { display: block; }
+
+  .topnav {
+    display: none;
+    position: absolute; left: 8px; right: 8px; top: calc(100% + 6px);
+    flex-direction: column; gap: 2px;
+    margin: 0; padding: 8px;
+    background: #101826;
+    border: 1px solid #243247; border-radius: 14px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.5);
+    z-index: 85;
+  }
+  .topnav.open { display: flex; }
   .topnav a, .topnav button {
-    flex: 1;
-    text-align: center;
-    padding: 9px 4px;
-    font-size: 11.5px;
-    border-radius: 8px;
-    line-height: 1.3;
+    display: block; width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 15px;
+    border-radius: 10px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .topnav a.active, .topnav button.active { background: rgba(31,199,182,.1); }
 
-  /* Deja hueco para la barra inferior */
-  body { padding-bottom: 62px; }
+  /* Ya no hay barra inferior: el contenido no necesita hueco reservado */
+  body { padding-bottom: 12px; }
 
-  .topbar-right { gap: 7px; }
-  .wallet-btn, .connect-btn { padding: 8px 12px; font-size: 12px; }
+  /* CRÍTICO: backdrop-filter crea bloque contenedor para hijos posicionados
+     y rompía la navegación. En móvil, fondo opaco y sin filtro. La cabecera
+     es además el ancla del panel desplegable. */
+  .topbar {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #0A1018;
+    overflow: visible;
+    z-index: 86;
+  }
+
+  .topbar-right { gap: 7px; min-width: 0; }
+  /* La dirección de la wallet nunca debe ensanchar la cabecera */
+  .wallet-btn, .connect-btn {
+    padding: 8px 12px; font-size: 12px;
+    max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
   .rate-pill, .bal-pill, .pill { display: none; }
   .net-badge { font-size: 9.5px; padding: 2px 6px; }
 }
@@ -109,16 +135,13 @@ img, svg, table { max-width: 100%; }
   .cookie-bar { bottom: 62px; }
 }
 
-/* Etiquetas cortas de navegación en móvil */
+/* Las etiquetas cortas (data-short) eran para la antigua barra inferior, que
+   ocultaba el texto real y mostraba una abreviatura. El panel desplegable
+   muestra el nombre completo, así que el pseudo-elemento debe desaparecer:
+   si no, cada entrada se ve duplicada ("ConvertirConvertir"). */
 @media (max-width: 860px) {
-  .topnav a[data-short], .topnav button[data-short] { font-size: 0; }
-  .topnav a[data-short]::after, .topnav button[data-short]::after {
-    content: attr(data-short);
-    font-size: 11.5px;
-  }
-}
-@media (max-width: 400px) {
-  .topnav a[data-short]::after, .topnav button[data-short]::after { font-size: 10.5px; }
+  .topnav a[data-short], .topnav button[data-short] { font-size: 15px; }
+  .topnav a[data-short]::after, .topnav button[data-short]::after { content: none; }
 }
 
 /* ---------- Desplegables (select) en tema oscuro ---------- */
@@ -145,4 +168,60 @@ select option { background: #16202F; color: #EAF0F6; }
 }
 @media (max-width: 380px) {
   .topnav a, .topnav button { font-size: 9.5px; }
+}
+
+
+/* ---------- El botón de menú solo existe en móvil ---------- */
+@media (min-width: 861px) {
+  .nav-toggle { display: none !important; }
+  .nav-backdrop { display: none !important; }
+}
+
+/* =====================================================================
+   Botón flotante de ayuda (todas las pantallas)
+   ===================================================================== */
+.dx-help { position: fixed; right: 16px; bottom: 16px; z-index: 120; }
+
+.dx-help-btn {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: #101826; border: 1px solid #243247;
+  box-shadow: 0 10px 26px rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform .15s ease, border-color .15s ease;
+}
+.dx-help-btn:hover { transform: translateY(-2px); border-color: #1FC7B6; }
+.dx-help-btn img { display: block; border-radius: 8px; }
+.dx-help.open .dx-help-btn { border-color: #1FC7B6; }
+
+.dx-help-panel {
+  display: none;
+  position: absolute; right: 0; bottom: 66px;
+  width: 258px; padding: 12px;
+  background: #101826; border: 1px solid #243247; border-radius: 14px;
+  box-shadow: 0 18px 44px rgba(0,0,0,.55);
+}
+.dx-help.open .dx-help-panel { display: block; }
+
+.dx-help-title {
+  font-size: 13px; font-weight: 600; color: #EAF0F6;
+  margin-bottom: 8px;
+}
+.dx-help-item {
+  display: flex; gap: 9px; align-items: flex-start;
+  padding: 9px 10px; margin-bottom: 5px;
+  border-radius: 10px; background: #16202F;
+  color: #EAF0F6; font-size: 12.5px; text-decoration: none; line-height: 1.35;
+}
+.dx-help-item:hover { background: rgba(31,199,182,.1); }
+.dx-help-item i { color: #8DA0B8; font-style: normal; font-size: 11px; }
+.dx-help-note {
+  font-size: 10.5px; color: #8DA0B8; line-height: 1.4;
+  border-top: 1px solid #243247; padding-top: 8px; margin-top: 6px;
+}
+
+/* En móvil, algo más discreto para no tapar contenido */
+@media (max-width: 860px) {
+  .dx-help { right: 12px; bottom: 12px; }
+  .dx-help-btn { width: 48px; height: 48px; }
+  .dx-help-panel { width: min(258px, calc(100vw - 34px)); }
 }

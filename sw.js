@@ -4,7 +4,7 @@
      · Páginas y recursos propios: red primero, caché como respaldo.
      · Llamadas a /api/ y a la blockchain: siempre red (datos frescos).
 */
-var CACHE = 'dexcuba-v2';
+var CACHE = 'dexcuba-v9';
 
 var SHELL = [
   '/',
@@ -17,7 +17,11 @@ var SHELL = [
   '/wallet.js',
   '/cookies.js',
   '/mobile.css',
+  '/nav.js',
   '/convertir.html',
+  '/mostrador.html',
+  '/pagar.html',
+  '/cobrar.html',
   '/escrow-bsc.html',
   '/icon.svg',
   '/manifest.json'

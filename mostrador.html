@@ -244,6 +244,14 @@ const CFG=window.DEXCUBA;
 const $=id=>document.getElementById(id);
 let SETUP=null, CUR='USDT', AMT='0', RATE=null, PAY=null, pollTimer=null;
 
+async function connectWallet(){
+  let got=null;
+  if(window.DexWallet){try{const w=await DexWallet.connect();if(w)got=w.address;}catch(e){}}
+  if(!got&&window.ethereum){try{const a=await window.ethereum.request({method:'eth_requestAccounts'});if(a&&a[0])got=a[0];}catch(e){}}
+  const b=$('walletBtn');
+  if(got&&b){b.textContent=got.slice(0,6)+'…'+got.slice(-4);b.classList.add('on');}
+  return got;
+}
 async function useWallet(){
   let got=null;
   if(window.DexWallet){const w=await DexWallet.connect();if(w)got={addr:w.address,net:'TRC20'};}
@@ -292,7 +300,7 @@ function usdtValue(){
 function paint(){
   const v=Number(AMT)||0;
   $('amtDisplay').textContent=(CUR==='CUP'?Math.round(v).toLocaleString('es-ES'):AMT)+' '+CUR;
-  if(CUR==='CUP')$('amtAlt').textContent=RATE&&v>0?('= '+usdtValue()+' USDT · tasa elTOQUE'):(RATE?'':'cargando tasa…');
+  if(CUR==='CUP')$('amtAlt').textContent=RATE&&v>0?('= '+usdtValue()+' USDT · tasa cripto elTOQUE'):(RATE?'':'cargando tasa…');
   else $('amtAlt').textContent=RATE&&v>0?('≈ '+Math.round(v*RATE).toLocaleString('es-ES')+' CUP'):'';
 }
 
@@ -353,5 +361,6 @@ loadSetup();
 if(SETUP){initPos();}else show('setupCard');
 function initPos(){$('bizName').textContent=(SETUP.name||'Mostrador')+' · '+(SETUP.net==='TRC20'?'TRC-20':'BEP-20');show('amountCard');paint();}
 </script>
+<script src="/nav.js"></script>
 </body>
 </html>

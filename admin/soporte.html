@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>DexCuba Admin — Soporte</title>
+<style>
+:root{--bg:#0B1220;--panel:#101A2C;--panel2:#16202F;--line:#243247;--text:#EAF0F6;--muted:#8DA0B8;--accent:#1FC7B6;--gold:#F0C24B;--up:#2EBD85;--down:#E2574C;--mono:'IBM Plex Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;padding:20px}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:20px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+.adm-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.adm-nav a{padding:7px 13px;border-radius:9px;border:1px solid var(--line);background:var(--panel);font-size:12.5px;color:var(--muted);text-decoration:none}
+.adm-nav a.on{border-color:var(--accent);color:var(--accent);background:rgba(31,199,182,.08)}
+.adm-nav a.site{margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat b{display:block;font-size:22px;font-family:var(--mono)}
+.stat span{font-size:11.5px;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{font-size:15px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--muted);font-weight:500;font-size:11px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid rgba(36,50,71,.5)}
+.mono{font-family:var(--mono);font-size:11px}
+.tag{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700}
+.tag.vip{background:rgba(240,194,75,.15);color:var(--gold)}
+.tag.biz{background:linear-gradient(135deg,#F0C24B,#C99A2E);color:#241a00}
+.tag.free{background:var(--panel2);color:var(--muted)}
+.tag.ok{background:rgba(46,189,133,.15);color:var(--up)}
+.tag.bad{background:rgba(226,87,76,.15);color:var(--down)}
+a{color:var(--accent);text-decoration:none}
+.empty{color:var(--muted);font-size:12.5px;padding:10px 0}
+.del{background:rgba(226,87,76,.12);color:var(--down);border:1px solid rgba(226,87,76,.3);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>DexCuba — Administración</h1>
+  <p class="sub">Protegido por Cloudflare Access · solo tu correo puede ver esto (páginas y APIs).</p>
+  <nav class="adm-nav">
+    <a href="/admin/index.html" >📊 Panel</a>
+    <a href="/admin/ofertas.html" >🛡️ Ofertas</a>
+    <a href="/admin/usuarios.html">👥 Usuarios</a>
+    <a href="/admin/referidos.html" style="padding:7px 13px;border-radius:9px;border:1px solid #243247;background:#101A2C;font-size:12.5px;color:#8DA0B8;text-decoration:none">🎁 Referidos</a>
+    <a href="/admin/soporte.html" style="padding:7px 13px;border-radius:9px;border:1px solid #243247;background:#101A2C;font-size:12.5px;color:#8DA0B8;text-decoration:none">🎫 Soporte</a>
+    <a href="/admin/suscripciones.html" >📒 Suscripciones</a>
+    <a href="/admin/sandbox.html" >🧪 Sandbox</a>
+    <a href="/" class="site">← Volver al sitio</a>
+  </nav>
+
+  <div class="card">
+    <h2>Tickets de soporte <span id="cnt" class="empty"></span></h2>
+    <p class="empty" style="margin-bottom:8px">Llegan desde el bot de Telegram. Responder envía el mensaje directamente al usuario.</p>
+    <div id="list"><div class="empty">Cargando…</div></div>
+  </div>
+
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let TK=[];
+async function load(){
+  try{
+    const r=await fetch('/admin/tickets');
+    const d=await r.json();
+    TK=d.tickets||[];
+    $('cnt').textContent=d.abiertos?('· '+d.abiertos+' abiertos'):'· todo resuelto';
+    render();
+  }catch(e){$('list').innerHTML='<div class="empty">Error: '+esc(e.message||e)+'</div>';}
+}
+function render(){
+  if(!TK.length){$('list').innerHTML='<div class="empty">Aún no hay tickets.</div>';return;}
+  $('list').innerHTML=TK.map((t,i)=>{
+    const datos=Object.entries(t.datos||{}).map(([k,v])=>`<div style="margin:3px 0"><span class="empty">${esc(k)}:</span> ${esc(v)}</div>`).join('');
+    const resp=(t.respuestas||[]).map(r=>`<div style="margin:3px 0;color:var(--accent)">↳ ${esc(r.texto)} <span class="empty">(${r.at.slice(0,16).replace('T',' ')})</span></div>`).join('');
+    return `<div style="border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--panel2)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <span class="tag ${t.tipo==='disputa'?'biz':'vip'}">${t.tipo==='disputa'?'⚖️ DISPUTA':'🆘 TICKET'}</span>
+        <b>${esc(t.id)}</b>
+        <span class="empty">${esc(t.usuario)} · ${t.created_at.slice(0,16).replace('T',' ')}</span>
+        <span class="tag ${t.estado==='abierto'?'bad':'ok'}" style="margin-left:auto">${t.estado}</span>
+      </div>
+      ${datos}
+      ${resp}
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <input id="r${i}" placeholder="Escribe tu respuesta…" style="flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px">
+        <button onclick="responder(${i})" style="border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:8px 12px;font-size:12px">Enviar</button>
+        <button onclick="cerrar(${i})" class="del">${t.estado==='abierto'?'Cerrar':'Reabrir'}</button>
+      </div>
+      <div id="m${i}" class="empty" style="margin-top:6px"></div>
+    </div>`;
+  }).join('');
+}
+async function responder(i){
+  const t=TK[i], txt=$('r'+i).value.trim();
+  if(!txt)return;
+  $('m'+i).textContent='Enviando…';
+  const r=await fetch('/admin/tickets',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:t.chat_id,respuesta:txt,id:t.id,key:t.key})});
+  const d=await r.json();
+  $('m'+i).textContent=d.ok?'✓ Enviado al usuario':('✗ '+(d.detalle||d.error));
+  if(d.ok){$('r'+i).value='';load();}
+}
+async function cerrar(i){
+  const t=TK[i];
+  await fetch('/admin/tickets',{method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({key:t.key,estado:t.estado==='abierto'?'cerrado':'abierto'})});
+  load();
+}
+load();
+setInterval(load,30000);
+</script>
+</body>
+</html>

@@ -114,6 +114,28 @@ contract DexCubaEscrow {
         _;
     }
 
+    /* ---------- Traspaso de propiedad en dos pasos ----------
+     * El owner propone y el nuevo dueño acepta. Si la dirección propuesta
+     * fuera incorrecta, nunca llegaría a aceptar y el owner actual sigue
+     * mandando: es imposible perder el control por un error de tecleo.
+     * Recordatorio: el owner NUNCA puede mover fondos de nadie. */
+    address public pendingOwner;
+    event OwnershipProposed(address indexed proposed);
+    event OwnershipTransferred(address indexed previous, address indexed current);
+
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "zero");
+        pendingOwner = newOwner;
+        emit OwnershipProposed(newOwner);
+    }
+
+    function acceptOwnership() external {
+        require(msg.sender == pendingOwner, "not pending owner");
+        emit OwnershipTransferred(owner, pendingOwner);
+        owner = pendingOwner;
+        pendingOwner = address(0);
+    }
+
     /// Cambia la dirección que cobra la comisión.
     function setFeeCollector(address a) external onlyOwner {
         require(a != address(0), "zero");
